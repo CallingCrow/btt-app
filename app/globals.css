@@ -176,15 +176,31 @@
   }
 }
 
+body {
+  color: var(--foreground);
+}
+
 p {
   font-size: 16;
+}
+
+h1 {
+  font-size: 48;
 }
 
 h2 {
   font-size: 36;
 }
 
-@media only screen and (max-width: 540px) {
+h4 {
+  font-size: 20px;
+}
+
+@media only screen and (max-width: 768px) {
+  h1 {
+    font-size: 32
+  }
+
   h2 {
     font-size: 24;
   }
