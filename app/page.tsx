@@ -13,8 +13,6 @@ export default function Home() {
         <NavBar />
       </header>
       <main>
-        Home
-        <div>Hero Section</div>
         <section className="relative z-10 w-full min-h-[10vh] sm:min-h-[50vh] flex items-center py-2 sm:py-12 ">
           {/* <div className="absolute inset-0 max-md:bg-black/50 lg:bg-linear-to-r lg:from-black/0 lg:to-black/60" /> */}
 
@@ -46,18 +44,20 @@ export default function Home() {
         <div>
           <Menu showAll={false} />
         </div>
-        <section className="md:space-y-[40px]">
+        <section className="space-y-[40px]">
           <InfoSection
             header="Limitless Customization"
             text="We insist on making the Deerioca from  scratch: making the dough, kneading and rolling the dough into small  balls, this procedure creates better texture and aroma for the tapioca. "
             image={heroImg}
-            bgprimary={true}
+            bgPrimary={true}
+            layoutPrimary={true}
           />
           <InfoSection
             header="Limitless Customization"
             text="We insist on making the Deerioca from  scratch: making the dough, kneading and rolling the dough into small  balls, this procedure creates better texture and aroma for the tapioca. "
             image={heroImg}
-            bgprimary={false}
+            bgPrimary={false}
+            layoutPrimary={false}
           />
         </section>
       </main>

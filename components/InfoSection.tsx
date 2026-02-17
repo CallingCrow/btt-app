@@ -5,35 +5,50 @@ interface InfoSectionProps {
   header: string;
   text: string;
   image: string | StaticImageData;
-  bgprimary?: boolean;
+  bgPrimary?: boolean;
+  layoutPrimary: boolean;
 }
 
 export const InfoSection = ({
   header,
   text,
   image,
-  bgprimary,
+  bgPrimary,
+  layoutPrimary,
 }: InfoSectionProps) => {
-  return (
-    <div
-      className={`sm:grid sm:grid-cols-2 space-x-[40px] md:space-x-[80px] px-[20px] md:px-[96px] py-[20px] md:py-[60px] ${bgprimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
-    >
-      <div className="md:mt-[40px] space-y-[16px]">
-        <h2>{header}</h2>
-        <p>{text}</p>
-      </div>
-      <div>
-        <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
-          <Image
-            src={image}
-            width={640}
-            height={400}
-            alt="Students scouting using green scouting tablets."
-          />
+  if (layoutPrimary) {
+    return (
+      <div
+        className={`sm:grid sm:grid-cols-2 gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+      >
+        <div className="md:mt-[40px] space-y-[16px]">
+          <h2>{header}</h2>
+          <p>{text}</p>
+        </div>
+        <div>
+          <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
+            <Image src={image} width={640} height={400} alt="TO DO" />
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div
+        className={`sm:grid sm:grid-cols-2 sm:gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+      >
+        <div>
+          <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
+            <Image src={image} width={640} height={400} alt="TO DO" />
+          </div>
+        </div>
+        <div className="mt-[20px] md:mt-[40px] space-y-[16px]">
+          <h2>{header}</h2>
+          <p>{text}</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 {
