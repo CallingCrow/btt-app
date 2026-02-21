@@ -7,7 +7,7 @@ import FacebookIcon from "./icons/FacebookIcon";
 const Footer = () => {
   return (
     <div className="mt-[40px] pt-[80px] bg-accent-foreground text-accent">
-      <div className="md:grid md:grid-cols-4 space-x-[96px] md:mx-[96px] mb-[80px]">
+      <div className="md:grid md:grid-cols-3 space-x-[96px] md:mx-[96px] mb-[80px]">
         <div className="space-y-[40px]">
           <div>
             <h4>Brand TO DO</h4>
@@ -27,7 +27,7 @@ const Footer = () => {
             </Button>
           </form>
         </div>
-        <div>
+        <div className="text-center">
           <h4>Contact</h4>
           <div className="text-[16px] mt-[30px] space-y-[20px] flex flex-col">
             {/* TO DO!! */}
@@ -36,7 +36,7 @@ const Footer = () => {
             <p>
               2545 Blanca St, Vancouver, <br></br>BC V6T 1C8, Canada
             </p>
-            <div className="flex justify-start space-x-[16px] items-center">
+            <div className="flex justify-center space-x-[16px] items-center">
               <div className="flex justify-start space-x-[16px]">
                 <Button variant="default" size="icon">
                   <InstagramIcon />
@@ -50,20 +50,9 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div>
-          <h4>Browse</h4>
-          <div className="text-[16px] mt-[30px] space-y-[20px] flex flex-col">
-            <Link href="/">Home</Link>
-            <Link href="/menu">Menu</Link>
-            <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
-            {/* TO DO!! */}
-            <Link href="/">My Cart</Link>
-          </div>
-        </div>
-        <div>
+        <div className="text-center">
           <h4>Hours</h4>
-          <div className="text-[16px] mt-[30px] space-y-[20px] flex flex-col max-w-[240px]">
+          <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex justify-center flex-col mx-[120px]">
             <div className="flex justify-between">
               <p>Monday</p>
               <p>2:00pm-8:00pm</p>
