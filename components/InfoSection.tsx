@@ -50,24 +50,3 @@ export const InfoSection = ({
     );
   }
 };
-
-{
-  /* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div className="grid lg:grid-cols-2 gap-12 items-center">
-    <div className="relative"></div>
-    <div>
-      <h2 className="text-3xl sm:text-4xl font-bold mb-6">Match Scouting</h2>
-      <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-        Real-time match data collection during competitions. Capture live
-        performance metrics, game events, and team actions with our fast and
-        intuitive scouting interface designed for the heat of competition.
-      </p>
-      <Link href="/login">
-        <Button variant="outline" size="lg" className="gap-2">
-          GET STARTED <ArrowRight className="h-4 w-4" />
-        </Button>
-      </Link>
-    </div>
-  </div>
-</div>; */
-}

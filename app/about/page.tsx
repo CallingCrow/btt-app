@@ -2,6 +2,7 @@ import React from "react";
 import { NavBar } from "@/components/NavBar";
 import { InfoSection } from "@/components/InfoSection";
 import Footer from "@/components/Footer";
+import heroImg from "@/public/Hero.jpg";
 
 const AboutPage = () => {
   return (
@@ -15,14 +16,16 @@ const AboutPage = () => {
           <InfoSection
             header="Limitless Customization"
             text="Paragraph text"
-            image="image here"
-            bgprimary={true}
+            image={heroImg}
+            bgPrimary={true}
+            layoutPrimary={true}
           />
           <InfoSection
             header="Limitless Customization"
             text="Paragraph text"
-            image="image here"
-            bgprimary={false}
+            image={heroImg}
+            bgPrimary={false}
+            layoutPrimary={false}
           />
         </div>
       </main>
