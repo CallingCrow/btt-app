@@ -9,7 +9,7 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div>
-      <header>
+      <header className="sticky z-50 top-0 bg-white">
         <NavBar />
       </header>
       <main>
@@ -26,7 +26,7 @@ export default function Home() {
 
           <div className="relative z-10 max-w-7xl mx-[96px] w-full">
             <div className="grid gap-12 lg:grid-cols-[1fr_500px] items-center">
-              <div className="text-left space-y-3">
+              <div className="text-center lg:text-left space-y-3">
                 <h1 className="text-foreground font-bold leading-tight">
                   Best quality ingredients, <br></br> made fresh
                 </h1>
@@ -34,7 +34,7 @@ export default function Home() {
                   Bubble Tea Time is committed to providing its customers the
                   freshest tasting drinks
                 </p>
-                <div className="flex justify-center sm:justify-start">
+                <div className="flex justify-center lg:justify-start">
                   <Button variant="default">Order Now</Button>
                 </div>
               </div>
@@ -42,6 +42,9 @@ export default function Home() {
           </div>
         </section>
         <div>
+          <div className="items-center flex justify-center mt-[40px] mb-[20px]">
+            <h3>Menu</h3>
+          </div>
           <Menu showAll={false} />
         </div>
         <section className="space-y-[40px]">

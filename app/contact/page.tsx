@@ -4,7 +4,7 @@ import { NavBar } from '@/components/NavBar';
 const ContactPage = () => {
   return (
     <div>
-        <header>
+        <header className="sticky z-50 top-0 bg-white">
             <NavBar />
         </header>
         <main>

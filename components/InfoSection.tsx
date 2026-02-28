@@ -19,7 +19,7 @@ export const InfoSection = ({
   if (layoutPrimary) {
     return (
       <div
-        className={`sm:grid sm:grid-cols-2 gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+        className={`sm:grid sm:grid-cols-2 gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[40px] lg:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
       >
         <div className="md:mt-[40px] space-y-[16px]">
           <h2>{header}</h2>
@@ -27,7 +27,7 @@ export const InfoSection = ({
         </div>
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
-            <Image src={image} width={640} height={400} alt="TO DO" />
+            <Image src={image} width={640} height={400} alt="TO DO" className="2xl:scale-120"/>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@ export const InfoSection = ({
   } else {
     return (
       <div
-        className={`sm:grid sm:grid-cols-2 sm:gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+        className={`sm:grid sm:grid-cols-2 sm:gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[40px] lg:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
       >
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">

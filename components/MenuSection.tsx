@@ -8,7 +8,7 @@ interface MenuSectionProps {
 {/* TO DO: ADD PROPS */}
 const MenuSection = ({category, showHeader}: MenuSectionProps) => {
   return (
-    <div className="mx-[20px] sm:mx-[96px] mb-[40px]">
+    <div className="mx-[20px] md:mx-[40px] lg:mx-[96px] mb-[40px]">
       {showHeader && <h6 className="mb-[20px] font-semibold">{category}</h6>}
       <div className="gap-y-[20px]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-[20px] gap-x-[40px]">

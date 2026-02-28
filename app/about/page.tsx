@@ -7,7 +7,7 @@ import heroImg from "@/public/Hero.jpg";
 const AboutPage = () => {
   return (
     <div>
-      <header>
+      <header className="sticky z-50 top-0 bg-white">
         <NavBar />
       </header>
       <main>
