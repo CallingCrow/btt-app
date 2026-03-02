@@ -24,18 +24,20 @@ export default function Home() {
             className="object-cover"
           />
 
-          <div className="relative z-10 max-w-7xl mx-[96px] w-full">
-            <div className="grid gap-12 lg:grid-cols-[1fr_500px] items-center">
-              <div className="text-center lg:text-left space-y-3">
+          <div className="relative z-10 mx-[96px] w-full">
+            <div className="items-center">
+              <div className="text-center flex-col justify-center lg:justify-start lg:text-left space-y-3">
                 <h1 className="text-foreground font-bold leading-tight">
                   Best quality ingredients, <br></br> made fresh
                 </h1>
-                <p className="text-foreground max-w-2xl">
+                <p className="text-foreground text-[20px] text-wrap">
                   Bubble Tea Time is committed to providing its customers the
                   freshest tasting drinks
                 </p>
                 <div className="flex justify-center lg:justify-start">
-                  <Button variant="default">Order Now</Button>
+                  <Button variant="default" size="lg">
+                    Order Now
+                  </Button>
                 </div>
               </div>
             </div>
