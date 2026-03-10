@@ -23,7 +23,7 @@ export const InfoSection = ({
       >
         <div className="md:mt-[40px] space-y-[16px]">
           <h2>{header}</h2>
-          <p>{text}</p>
+          <p className="leading-8">{text}</p>
         </div>
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
@@ -44,7 +44,7 @@ export const InfoSection = ({
         </div>
         <div className="mt-[20px] md:mt-[40px] space-y-[16px]">
           <h2>{header}</h2>
-          <p>{text}</p>
+          <p className="leading-8">{text}</p>
         </div>
       </div>
     );

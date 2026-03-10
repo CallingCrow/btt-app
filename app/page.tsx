@@ -44,7 +44,7 @@ export default function Home() {
           </div>
         </section>
         <div>
-          <div className="items-center flex justify-center mt-[40px] mb-[20px]">
+          <div className="items-center flex justify-center mt-[40px] mb-[16px]">
             <h3>Menu</h3>
           </div>
           <Menu showAll={false} />
@@ -52,7 +52,7 @@ export default function Home() {
         <section className="space-y-[40px]">
           <InfoSection
             header="Limitless Customization"
-            text="We insist on making the Deerioca from  scratch: making the dough, kneading and rolling the dough into small  balls, this procedure creates better texture and aroma for the tapioca. "
+            text="At Bubble Tea Time, every drink is made just the way you like it. Choose your favorite flavor, milk option, sweetness level, ice level, and toppings. From classic tapioca pearls to fun popping boba flavors, the possibilities are almost limitless. Whether you prefer something creamy, fruity, or refreshing, you can create the perfect drink that matches your taste every time you visit."
             image={heroImg}
             bgPrimary={true}
             layoutPrimary={true}

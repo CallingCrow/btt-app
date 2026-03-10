@@ -7,6 +7,7 @@ import { useRef } from 'react';
 
 const Menu = ({ showAll }: any) => {
   const [selectedCategory, setSelectedCategory] = useState('Milk Tea');
+
   function scrollTo(sectionId: string) {
     document.getElementById(sectionId)?.scrollIntoView({behavior: 'smooth'})
   }

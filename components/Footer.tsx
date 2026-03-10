@@ -170,7 +170,7 @@ const Footer = () => {
         <div className="hidden lg:block lg:border-t-2 lg:border-solid lg:border-accent">
           <div className="flex justify-between mx-[20px] md:mx-[96px] py-[10px]">
             <p>@copyright</p>
-            <p>Admin Login</p>
+            <Link href="/admin">Admin Login</Link>
           </div>
         </div>
       </div>
