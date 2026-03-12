@@ -22,7 +22,7 @@ const MenuSection = ({type, items, showHeader}: MenuSectionProps) => {
       {showHeader && <h6 className="mb-[20px] font-semibold">{type}</h6>}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-[20px] gap-x-[40px]">
-        {items.map((item, index) => (
+        {items?.map((item, index) => (
           <MenuCard 
             key={index}
             name={item.name}
