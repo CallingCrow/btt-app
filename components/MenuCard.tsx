@@ -4,6 +4,7 @@ import { EditModal } from './EditModal';
 import { useState } from 'react';
 
 interface MenuCardProps {
+  id: number;
   name: string;
   type: string;
   priceR: number;
@@ -14,7 +15,7 @@ interface MenuCardProps {
   isAdmin: boolean;
 } 
 
-const MenuCard = ({name, type, priceR, priceL, image, descriptionS, descriptionL, isAdmin}: MenuCardProps) => {
+const MenuCard = ({id, name, type, priceR, priceL, image, descriptionS, descriptionL, isAdmin}: MenuCardProps) => {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const openModal = () => {
@@ -48,7 +49,7 @@ const MenuCard = ({name, type, priceR, priceL, image, descriptionS, descriptionL
           </CardContent>
       </Card>
       <CustomizeModal open={isCustomizeModalOpen} onOpenChange={setIsCustomizeModalOpen} name={name} priceR={priceR} image={image} descriptionL={descriptionL} />
-      <EditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} name={name} type={type} priceR={priceR} priceL={priceL} image={image} descriptionS={descriptionS} descriptionL={descriptionL}></EditModal>
+      <EditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} id={id} name={name} type={type} priceR={priceR} priceL={priceL} image={image} descriptionS={descriptionS} descriptionL={descriptionL}></EditModal>
     </div>
   )
 }

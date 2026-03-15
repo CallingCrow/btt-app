@@ -1,6 +1,7 @@
 import MenuCard from "./MenuCard";
 
 interface MenuItem {
+  id: number;
   name: string;
   type: string;
   priceR: number;
@@ -26,6 +27,7 @@ const MenuSection = ({type, items, showHeader, isAdmin}: MenuSectionProps) => {
         {items?.map((item, index) => (
           <MenuCard 
             key={index}
+            id={item.id}
             name={item.name}
             type={item.type}
             priceR={item.priceR}
