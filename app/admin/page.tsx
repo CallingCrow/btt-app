@@ -110,7 +110,7 @@ const AdminPage = () => {
 
                     <div>
                         {[...groupedItems.entries()].map(([type, items]) => (
-                            <MenuSection key={type} type={type} items={items} showHeader={true} />
+                            <MenuSection key={type} type={type} items={items} showHeader={true} isAdmin={true}/>
                         ))}
                     </div>
                 </div>
