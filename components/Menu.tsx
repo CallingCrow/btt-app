@@ -31,8 +31,8 @@ const Menu = ({ showAll }: any) => {
             </div>
             <div>
               {[...groupedItems.entries()].map(([type, items]) => (
-                <div id={type}>
-                  <MenuSection key={type} type={type} items={items} showHeader={true} />
+                <div id={type} key={type}>
+                  <MenuSection key={type} type={type} items={items} showHeader={true} isAdmin={false} />
                 </div>
               ))}
             </div>
@@ -53,6 +53,7 @@ const Menu = ({ showAll }: any) => {
               type={selectedCategory}
               items={groupedItems.get(selectedCategory) || []}
               showHeader={false}
+              isAdmin={false}
             />
           </div>
 

@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { supabase } from "@/app/supabase-client";
 import { useMenu } from "@/context/MenuContext";
+import { ChangeEvent } from "react";
 
 interface EditModalProps {
     open: any,
@@ -58,7 +59,18 @@ export function EditModal({ open, onOpenChange, id, name, type, priceR, priceL, 
     }
 
     const updateItem = async (id: number) => {
-        const { error } = await supabase.from("menu").update(newItem).eq("id", id);
+        let imageUrl: string | null = null;
+        if (menuImage) {
+            //call Supabase to send to storage
+            imageUrl = await uploadImage(menuImage);
+        }
+
+        const curItem = {
+            ...newItem,
+            image: imageUrl || ""
+        };
+
+        const { error } = await supabase.from("menu").update(curItem).eq("id", id);
 
         if (error) {
             console.error("Error editing item: ", error.message);
@@ -68,18 +80,32 @@ export function EditModal({ open, onOpenChange, id, name, type, priceR, priceL, 
         return true;
     };
 
+    const [menuImage, setMenuImage] = useState<File | null>(null);
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setMenuImage(e.target.files[0]);
+        }
+    }
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const filePath = `${file.name}-${Date.now()}`;
+        const { error } = await supabase.storage.from("menu-images").upload(filePath, file);
+
+        if (error) {
+            console.error("Error uploading image:", error.message);
+            return null;
+        }
+
+        const { data } = await supabase.storage.from('menu-images').getPublicUrl(filePath);
+
+        return data.publicUrl;
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
 
             <DialogContent className="flex">
-                <div>
-                    {/* Image */}
-                    <img
-                        src='https://cdn.shadcnstudio.com/ss-assets/components/card/image-3.png'
-                        alt='Banner'
-                        className='size-full rounded-l-lg min-w-[200px]'
-                    />
-                </div>
                 <div>
                     <DialogHeader className="py-4 ml-[40px]">
                         <DialogTitle>{newItem.name}</DialogTitle>
@@ -133,9 +159,7 @@ export function EditModal({ open, onOpenChange, id, name, type, priceR, priceL, 
                                     </div>
                                     <div>
                                         <label>Image</label>
-                                        <input type="text" placeholder="image" value={newItem.image} onChange={(e) =>
-                                            setNewItem((prev) => ({ ...prev, image: e.target.value }))
-                                        } />
+                                        <input type="file" accept='image/*' placeholder="image" onChange={(handleFileChange)} />
                                     </div>
                                     <div>
                                         <label>Short Description</label>

@@ -36,7 +36,7 @@ export default function Home() {
                 </p>
                 <div className="flex justify-center lg:justify-start">
                   <Button variant="default" size="lg">
-                    Order Now
+                    Order Pickup
                   </Button>
                 </div>
               </div>

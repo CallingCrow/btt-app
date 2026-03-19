@@ -41,11 +41,16 @@ const MenuCard = ({id, name, type, priceR, priceL, image, descriptionS, descript
               </CardFooter>
           </div>
           <CardContent className='px-0 max-w-[120px]'>
-              <img
-              src='https://cdn.shadcnstudio.com/ss-assets/components/card/image-3.png'
-              alt='Banner'
-              className='size-full rounded-r-[10px]'
-              />
+              {image=="" ? (
+                <div></div>
+              ) : (
+                <img
+                src={image}
+                alt='Banner'
+                className='size-full rounded-r-[10px]'
+                />
+              )}
+
           </CardContent>
       </Card>
       <CustomizeModal open={isCustomizeModalOpen} onOpenChange={setIsCustomizeModalOpen} name={name} priceR={priceR} image={image} descriptionL={descriptionL} />

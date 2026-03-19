@@ -40,10 +40,10 @@ export function CustomizeModal({ open, onOpenChange, name, priceR, image, descri
             <DialogContent className="flex">
                 <div>
                     {/* Image */}
-                    <img
-                    src='https://cdn.shadcnstudio.com/ss-assets/components/card/image-3.png'
-                    alt='Banner'
-                    className='size-full rounded-l-lg min-w-[200px]'
+                    <img 
+                        src={image}
+                        alt='Image of Drink'
+                        className='size-full rounded-l-lg w-auto'
                     />
                 </div>
                 <div>
