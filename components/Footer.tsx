@@ -1,10 +1,39 @@
+'use client'
+
 import React from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import InstagramIcon from "./icons/InstagramIcon";
 import FacebookIcon from "./icons/FacebookIcon";
+import { supabase } from "@/app/supabase-client";
+import { useEffect, useState } from "react";
+
+interface day {
+  id: number;
+  day: string;
+  start_time: string;
+  end_time: string;
+}
 
 const Footer = () => {
+  const [hours, setHours] = useState<day[]>([]);
+  const fetchHours = async () => {
+    const { data, error } = await supabase
+      .from("hours")
+      .select("*")
+
+    if (error) {
+      console.error("Error fetching hours", error.message);
+      return;
+    }
+
+    setHours(data);
+  };
+
+  useEffect(() => {
+    fetchHours();
+  }, []);
+
   return (
     <div className="bg-accent-foreground text-accent mt-[40px]">
       {/* Mobile View */}
@@ -35,34 +64,12 @@ const Footer = () => {
         <div className="text-center">
           <h4>Hours</h4>
           <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex flex-col mx-[100px] sm:mx-[180px]">
-            <div className="flex justify-between">
-              <p>Monday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Tuesday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Wednesday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Thursday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Friday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Saturday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Sunday</p>
-              <p>2:00pm-8:00pm</p>
-            </div>
+            {hours.map((day, key) => (
+              <div key={key} className='flex justify-between'>
+                <p className=''>{day.day}:</p>
+                <p>{day.start_time}-{day.end_time}</p>
+              </div>
+            ))}
           </div>
         </div>
         <div className="items-center text-center space-y-[40px]">
@@ -135,35 +142,13 @@ const Footer = () => {
           </div>
           <div className="text-center flex-col justify-center">
             <h4>Hours</h4>
-            <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex justify-center flex-col min-w-[260px]">
-              <div className="flex justify-between">
-                <p>Monday</p>
-                <p>2:00pm-8:00pm</p>
+            <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex flex-col mx-[100px] sm:mx-[180px]">
+            {hours.map((day, key) => (
+              <div key={key} className='flex justify-between'>
+                <p className=''>{day.day}</p>
+                <p>{day.start_time}-{day.end_time}</p>
               </div>
-              <div className="flex justify-between">
-                <p>Tuesday</p>
-                <p>2:00pm-8:00pm</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Wednesday</p>
-                <p>2:00pm-8:00pm</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Thursday</p>
-                <p>2:00pm-8:00pm</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Friday</p>
-                <p>2:00pm-8:00pm</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Saturday</p>
-                <p>2:00pm-8:00pm</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Sunday</p>
-                <p>2:00pm-8:00pm</p>
-              </div>
+            ))}
             </div>
           </div>
         </div>

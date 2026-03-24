@@ -1,3 +1,5 @@
+'use client'
+
 import { NavBar } from "@/components/NavBar";
 import { InfoSection } from "@/components/InfoSection";
 import Footer from "@/components/Footer";
@@ -5,8 +7,38 @@ import Menu from "@/components/Menu";
 import { Button } from "@/components/ui/button";
 import heroImg from "@/public/Hero.jpg";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { supabase } from "./supabase-client";
+
+interface infoSection {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  onHome: boolean;
+}
 
 export default function Home() {
+    const [infoSections, setNewInfoSections] = useState<infoSection[]>([]);
+  
+    const fetchInfoSections = async () => {
+        const { data, error } = await supabase
+        .from("info")
+        .select("*")
+        .eq('onHome', true)
+  
+        if (error) {
+        console.error("Error fetching info section on home page", error.message);
+        return;
+        }
+  
+        setNewInfoSections(data);
+    };
+  
+    useEffect(() => {
+        fetchInfoSections();
+    }, []);
+
   return (
     <div>
       <header className="sticky z-50 top-0 bg-white">
@@ -50,20 +82,16 @@ export default function Home() {
           <Menu showAll={false} />
         </div>
         <section className="space-y-[40px]">
-          <InfoSection
-            header="Limitless Customization"
-            text="At Bubble Tea Time, every drink is made just the way you like it. Choose your favorite flavor, milk option, sweetness level, ice level, and toppings. From classic tapioca pearls to fun popping boba flavors, the possibilities are almost limitless. Whether you prefer something creamy, fruity, or refreshing, you can create the perfect drink that matches your taste every time you visit."
-            image={heroImg}
-            bgPrimary={true}
-            layoutPrimary={true}
-          />
-          <InfoSection
-            header="Limitless Customization"
-            text="We insist on making the Deerioca from  scratch: making the dough, kneading and rolling the dough into small  balls, this procedure creates better texture and aroma for the tapioca. "
-            image={heroImg}
-            bgPrimary={false}
-            layoutPrimary={false}
-          />
+          {infoSections.map((infoSection, index) => (
+            <InfoSection
+              key={index}
+              header={infoSection.title}
+              text={infoSection.description}
+              image={infoSection.image}
+              bgPrimary={index % 2 === 0}
+              layoutPrimary={index % 2 === 0}
+            />
+          ))}
         </section>
       </main>
       <footer>
