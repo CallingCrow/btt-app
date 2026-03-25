@@ -46,7 +46,7 @@ const Footer = () => {
 
   const fetchcontactInfoList = async () => {
     const { data, error } = await supabase
-      .from("contact-info")
+      .from("contact_info")
       .select("*")
 
     if (error) {
@@ -164,7 +164,7 @@ const Footer = () => {
           </div>
           <div className="text-center flex-col justify-center">
             <h4>Hours</h4>
-            <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex flex-col mx-[100px] sm:mx-[180px]">
+            <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex flex-col mx-[10px] lg:mx-[20px] xl:mx-[50px]">
             {hours.map((day, key) => (
               <div key={key} className='flex justify-between'>
                 <p className=''>{day.day}</p>

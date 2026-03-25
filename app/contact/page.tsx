@@ -17,7 +17,7 @@ const ContactPage = () => {
 
   const fetchcontactInfoList = async () => {
     const { data, error } = await supabase
-      .from("contact-info")
+      .from("contact_info")
       .select("*")
 
     if (error) {

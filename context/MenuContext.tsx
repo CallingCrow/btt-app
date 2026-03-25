@@ -5,37 +5,58 @@
     import { useMemo } from "react";
 
     export type MenuItem = {
-    name: string;
-    type: string;
-    priceR: number;
-    priceL: number;
-    image: string;
-    descriptionS: string;
-    descriptionL: string;
+        id: number;
+        name: string;
+        category: number;
+        priceR: number;
+        priceL: number;
+        image: string;
+        descriptionS: string;
+        descriptionL: string;
+        menu_categories: {
+            id: number;
+            name: string;
+        };
     };
 
     type MenuContextType = {
-    items: MenuItem[];
-    loading: boolean;
-    refetch: () => Promise<void>;
+        items: MenuItem[];
+        groupedItems: Map<number, MenuItem[]>;
+        categories: { id: number; name: string }[];
+        loading: boolean;
+        refetch: () => Promise<void>;
     };
 
     const MenuContext = createContext<MenuContextType | null>(null);
 
     export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
     const [items, setItems] = useState<MenuItem[]>([]);
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchMenu = async () => {
         const { data, error } = await supabase
         .from("menu")
-        .select("*")
-        .order("type")
+        .select(`
+            id,
+            name,
+            category,
+            priceR,
+            priceL,
+            image,
+            descriptionS,
+            descriptionL,
+            menu_categories (
+                id,
+                name
+            )
+        `)
+        .order("category");
         .order("name");
 
         if (error) {
-        console.error("Error fetching menu:", error.message);
-        return;
+            console.error("Error fetching menu:", error.message);
+            return;
         }
 
         setItems(data || []);
@@ -46,22 +67,51 @@
         fetchMenu();
     }, []);
 
-    const groupedItems = useMemo(() => {
-        const map = new Map<string, MenuItem[]>();
+    const fetchCategories = async () => {
+        const { data, error } = await supabase
+            .from("menu_categories")
+            .select("*")
+            .order("id");
 
-        items.forEach((item) => {
-        if (!map.has(item.type)) {
-            map.set(item.type, []);
+        if (error) {
+            console.error(error);
+            return;
         }
 
-        map.get(item.type)!.push(item);
+        setCategories(data || []);
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const groupedItems = useMemo(() => {
+        const map = new Map<number, MenuItem[]>();
+
+        items.forEach((item) => {  
+            const categoryId = item.category;
+            
+            if (!categoryId) return;
+            if (!map.has(categoryId)) {
+                map.set(categoryId, []);
+            }
+
+            map.get(categoryId)!.push(item);
         });
 
         return map;
     }, [items]);
 
     return (
-        <MenuContext.Provider value={{ items, groupedItems, loading, refetch: fetchMenu }}>
+        <MenuContext.Provider
+            value={{
+                items,
+                groupedItems,
+                categories,
+                loading,
+                refetch: fetchMenu,
+            }}
+        >
         {children}
         </MenuContext.Provider>
     );
