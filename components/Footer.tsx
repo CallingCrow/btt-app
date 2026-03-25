@@ -13,14 +13,24 @@ interface day {
   day: string;
   start_time: string;
   end_time: string;
+  isClosed: boolean;
+}
+
+interface contactInfo {
+  id: number;
+  name: string;
+  info: string;
 }
 
 const Footer = () => {
   const [hours, setHours] = useState<day[]>([]);
+  const [contactInfoList, setContactInfoList] = useState<contactInfo[]>([]);
+
   const fetchHours = async () => {
     const { data, error } = await supabase
       .from("hours")
       .select("*")
+      .order("id")
 
     if (error) {
       console.error("Error fetching hours", error.message);
@@ -34,6 +44,24 @@ const Footer = () => {
     fetchHours();
   }, []);
 
+  const fetchcontactInfoList = async () => {
+    const { data, error } = await supabase
+      .from("contact-info")
+      .select("*")
+
+    if (error) {
+      console.error("Error fetching contact info:", error.message);
+      return;
+    }
+
+    setContactInfoList(data);
+  };
+
+  useEffect(() => {
+    fetchcontactInfoList();
+  }, []);
+
+
   return (
     <div className="bg-accent-foreground text-accent mt-[40px]">
       {/* Mobile View */}
@@ -41,12 +69,9 @@ const Footer = () => {
         <div className="text-center">
           <h4>Contact</h4>
           <div className="text-[16px] mt-[30px] space-y-[20px] flex flex-col">
-            {/* TO DO!! */}
-            <p>425-425-425</p>
-            <p>epicemail@gmail.com</p>
-            <p>
-              2545 Blanca St, Vancouver, <br></br>BC V6T 1C8, Canada
-            </p>
+            {contactInfoList.map((contactInfo, key) => (
+              <p key={key}>{contactInfo.info}</p>
+            ))}
             <div className="flex justify-center space-x-[16px] items-center">
               <div className="flex justify-start space-x-[16px]">
                 <Button variant="default" size="icon">
@@ -66,15 +91,15 @@ const Footer = () => {
           <div className="text-center text-[16px] mt-[30px] space-y-[20px] flex flex-col mx-[100px] sm:mx-[180px]">
             {hours.map((day, key) => (
               <div key={key} className='flex justify-between'>
-                <p className=''>{day.day}:</p>
-                <p>{day.start_time}-{day.end_time}</p>
+                <p>{day.day}:</p>
+                {day.isClosed ? <p>Closed</p> : <p>{day.start_time}-{day.end_time}</p>}
               </div>
             ))}
           </div>
         </div>
         <div className="items-center text-center space-y-[40px]">
           <div>
-            <h4>Brand TO DO</h4>
+            <h4>Bubble Tea Time</h4>
             <p className="!text-[14px]">Best quality ingredients, made fresh</p>
           </div>
           {/* Find some way to prevent bot spam? */}
@@ -98,7 +123,7 @@ const Footer = () => {
         <div className="md:grid md:grid-cols-3 space-x-[96px] md:mx-[96px] mb-[80px]">
           <div className="space-y-[40px]">
             <div>
-              <h4>Brand TO DO</h4>
+              <h4>Bubble Tea Time</h4>
               <p className="!text-[14px]">
                 Best quality ingredients, made fresh
               </p>
@@ -119,13 +144,10 @@ const Footer = () => {
           </div>
           <div className="text-center">
             <h4>Contact</h4>
-            <div className="text-[16px] mt-[30px] space-y-[20px] flex flex-col">
-              {/* TO DO!! */}
-              <p>425-425-425</p>
-              <p>epicemail@gmail.com</p>
-              <p>
-                2545 Blanca St, Vancouver, <br></br>BC V6T 1C8, Canada
-              </p>
+            <div className="text-[16px] mt-[30px] space-y-[20px] flex flex-col items-center">
+            {contactInfoList.map((contactInfo, key) => (
+              <p key={key} className="w-[250px]">{contactInfo.info}</p>
+            ))}
               <div className="flex justify-center space-x-[16px] items-center">
                 <div className="flex justify-start space-x-[16px]">
                   <Button variant="default" size="icon">
@@ -146,7 +168,7 @@ const Footer = () => {
             {hours.map((day, key) => (
               <div key={key} className='flex justify-between'>
                 <p className=''>{day.day}</p>
-                <p>{day.start_time}-{day.end_time}</p>
+                {day.isClosed ? <p>Closed</p> : <p>{day.start_time}-{day.end_time}</p>}
               </div>
             ))}
             </div>

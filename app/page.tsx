@@ -66,9 +66,12 @@ export default function Home() {
                   Bubble Tea Time is committed to providing its customers the
                   freshest tasting drinks
                 </p>
-                <div className="flex justify-center lg:justify-start">
+                <div className="flex justify-center lg:justify-start gap-4">
                   <Button variant="default" size="lg">
                     Order Pickup
+                  </Button>
+                  <Button variant="secondary" size="lg">
+                    Order Delivery
                   </Button>
                 </div>
               </div>

@@ -27,7 +27,11 @@ export const InfoSection = ({
         </div>
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
-            <Image src={image} width={640} height={400} alt="TO DO" className="2xl:scale-120"/>
+            {image===null || image==="" ? (
+              <div></div>
+            ) : (
+              <Image src={image} width={640} height={400} alt="TO DO" className="2xl:scale-120"/>
+            )}
           </div>
         </div>
       </div>
@@ -39,7 +43,11 @@ export const InfoSection = ({
       >
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
-            <Image src={image} width={640} height={400} alt="TO DO" />
+            {image===null || image==="" ? (
+              <div></div>
+            ) : (
+              <Image src={image} width={640} height={400} alt="TO DO" className="2xl:scale-120"/>
+            )}
           </div>
         </div>
         <div className="mt-[20px] md:mt-[40px] space-y-[16px]">

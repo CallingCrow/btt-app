@@ -41,7 +41,7 @@ const MenuCard = ({id, name, type, priceR, priceL, image, descriptionS, descript
               </CardFooter>
           </div>
           <CardContent className='px-0 max-w-[120px]'>
-              {image=="" ? (
+              {image===null || image==="" ? (
                 <div></div>
               ) : (
                 <img
