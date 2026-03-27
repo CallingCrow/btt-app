@@ -50,14 +50,14 @@ const ContactPage = () => {
             className="object-cover"
           /> */}
         </section>
-        <section className="space-y-[40px] bg-secondary">
-          <div className='px-[20px] md:px-[40px] lg:px-[96px] grid grid-rows-2 md:grid-cols-2 gap-x-[40px]'>
+        <section className="space-y-[2.5rem] bg-secondary">
+          <div className='px-[1.25rem] md:px-[2.5rem] lg:px-[6rem] grid grid-rows-2 md:grid-cols-2 gap-x-[2.5rem]'>
             <div>
-              <h4 className='pt-[60px] pb-[20px]'>Get in Touch</h4>
+              <h4 className='pt-[3.75rem] pb-[1.25rem]'>Get in Touch</h4>
               {contactInfoList.map((contactInfo, key) => (
-                <div key={key} className='py-[10px] max-w-[300px]'>
+                <div key={key} className='py-[0.625rem] max-w-[18.75rem]'>
                   <h6 className=''>{contactInfo.name}:</h6>
-                  <h6 className='text-wrap pt-[6px]'>{contactInfo.info}</h6>
+                  <h6 className='text-wrap pt-[0.375rem]'>{contactInfo.info}</h6>
                 </div>
               ))}
             </div>

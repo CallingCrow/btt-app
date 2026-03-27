@@ -25,8 +25,8 @@ const Menu = ({ showAll }: any) => {
       <div>
         {showAll ? (
           <div className="flex flex-col min-h-screen">
-            <div className="sticky z-50 top-[64px] bg-white flex justify-between border-b-2 border-solid mb-[40px] py-[10px] px-[20px] md:px-[40px] lg:px-[96px]">
-              <div className="text-[20px] flex gap-x-[40px]">
+            <div className="sticky z-50 top-[4rem] bg-white flex justify-between text-nowrap overflow-x-auto border-b-2 border-solid mb-[2.5rem] py-[0.625rem] px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
+              <h6 className="flex gap-x-[2.5rem]">
                 {categories.map((category) => (
                   <button
                     key={category.id}
@@ -35,7 +35,7 @@ const Menu = ({ showAll }: any) => {
                     {category.name}
                   </button>
                 ))}
-              </div>
+              </h6>
               <div></div>
             </div>
             <div>
@@ -58,8 +58,8 @@ const Menu = ({ showAll }: any) => {
           </div>
         ) : (
           <div>
-            <div className="flex justify-between border-b-2 border-solid mb-[40px] py-[10px] px-[20px] md:px-[40px] lg:px-[96px]">
-              <div className="text-[20px] flex gap-x-[40px]">
+            <div className="flex justify-between text-nowrap overflow-x-auto border-b-2 border-solid mb-[2.5rem] py-[0.625rem] px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
+              <h6 className="flex gap-x-[2.5rem]">
                 {categories.map((category) => (
                   <button
                     key={category.id}
@@ -69,7 +69,7 @@ const Menu = ({ showAll }: any) => {
                     {category.name}
                   </button>
                 ))}
-              </div>
+              </h6>
               <div></div>
             </div>
             <MenuSection

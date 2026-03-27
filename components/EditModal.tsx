@@ -104,7 +104,7 @@ export function EditModal({ open, onOpenChange, id, name, type, price, image, de
 
             <DialogContent className="flex">
                 <div>
-                    <DialogHeader className="py-4 ml-[40px]">
+                    <DialogHeader className="py-4 ml-[2.5rem]">
                         <DialogTitle>{newItem.name}</DialogTitle>
                         <DialogDescription className="">
                             <span className="text-[1.5rem]">
@@ -116,7 +116,7 @@ export function EditModal({ open, onOpenChange, id, name, type, price, image, de
                             </span>
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="bg-muted px-[40px]">
+                    <div className="bg-muted px-[2.5rem]">
                         <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4 py-4">
                             <h6>Edit Item</h6>
 
@@ -127,7 +127,7 @@ export function EditModal({ open, onOpenChange, id, name, type, price, image, de
                                     onOpenChange(false);
                                 }
                             }}
-                                className="bg-white rounded-lg px-[20px] pb-[10px] mt-[10px]"
+                                className="bg-white rounded-lg px-[1.25rem] pb-[0.625rem] mt-[0.625rem]"
                             >
                                 <div className="flex flex-wrap gap-x-16">
                                     <div>
@@ -175,7 +175,7 @@ export function EditModal({ open, onOpenChange, id, name, type, price, image, de
                             </form>
                         </div>
                     </div>
-                    <DialogFooter className="pb-4 pr-4 ml-[40px]">
+                    <DialogFooter className="pb-4 pr-4 ml-[2.5rem]">
                         <div className="flex justify-end w-full mt-4">
                             <DialogClose asChild>
                                 <Button onClick={() => deleteItem(id)} variant={"destructive"}>Delete</Button>

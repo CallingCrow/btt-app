@@ -45,7 +45,7 @@ const AboutPage = () => {
       </header>
       <main>
         <div>Top image</div>
-        <div className="space-y-[40px]">
+        <div className="space-y-[2.5rem]">
           {infoSections.map((infoSection, index) => (
             <InfoSection
               key={index}

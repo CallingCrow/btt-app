@@ -20,7 +20,7 @@ export const Auth = () => {
 
     return (
         <div className="bg-secondary min-h-[100vh]">
-        <div className="min-w-[400px] m-auto p-[2.5rem] rounded-lg bg-white items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="min-w-[25rem] m-auto p-[2.5rem] rounded-lg bg-white items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <form onSubmit={handleSubmit} className="flex flex-col -gap-y-2">
                 <div>
                     <label>Email</label>

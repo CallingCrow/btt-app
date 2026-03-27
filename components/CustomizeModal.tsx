@@ -56,14 +56,14 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                 const { data: categoryGroups, error: categoryGroupsError } = await supabase
                     .from("category_customization_groups")
                     .select(`
-        group_id (
-          id,
-          name,
-          is_required,
-          min_select,
-          max_select
-        )
-      `)
+                        group_id (
+                        id,
+                        name,
+                        is_required,
+                        min_select,
+                        max_select
+                        )
+                    `)
                     .eq("category_id", item.category_id);
 
                 if (categoryGroupsError) {
@@ -230,7 +230,7 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                     />
                 </div>
                 <div>
-                    <DialogHeader className="py-4 ml-[40px]">
+                    <DialogHeader className="py-4 ml-[2.5rem]">
                         <DialogTitle><h5>{name}</h5></DialogTitle>
                         <DialogDescription>
                             <h5>
@@ -241,9 +241,9 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                             </p>
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="bg-gray-100 px-[40px]">
+                    <div className="bg-gray-100 px-[2.5rem]">
                         <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4 py-4">
-                            <span className="text-[20px]">Customize your item</span>
+                            <span className="text-[1.25rem]">Customize your item</span>
                             {loading ? (
                                 <p>Loading...</p>
                             ) : (
@@ -259,7 +259,7 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                             )}
                         </div>
                     </div>
-                    <DialogFooter className="pb-4 pr-4 ml-[40px]">
+                    <DialogFooter className="pb-4 pr-4 ml-[2.5rem]">
                         <div className="flex justify-between w-full mt-4">
                             <div className="flex gap-x-2">
                                 <button onClick={handleMinus} className="cursor-pointer"><CircleMinus /></button>
@@ -337,7 +337,7 @@ const CustomizeBlock = ({ group, selectedOptions, setSelectedOptions, defaultsMa
     }
 
     return (
-        <div className="bg-card px-[20px] py-[20px] rounded-lg my-2">
+        <div className="bg-card px-[1.25rem] py-[1.25rem] rounded-lg my-2">
             <h6>{group.name}</h6>
             <div className="text-muted-foreground"> Select {group.min_select != group.max_select ? `${group.min_select} - ${group.max_select}` : `${group.min_select}`} </div>
 

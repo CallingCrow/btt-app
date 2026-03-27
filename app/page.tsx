@@ -56,13 +56,13 @@ export default function Home() {
             className="object-cover"
           />
 
-          <div className="relative z-10 mx-[96px] w-full">
+          <div className="relative z-10 mx-[6rem] w-full">
             <div className="items-center">
               <div className="text-center flex-col justify-center lg:justify-start lg:text-left space-y-3">
                 <h1 className="text-foreground font-bold leading-tight">
                   Best quality ingredients, <br></br> made fresh
                 </h1>
-                <p className="text-foreground text-[20px] text-wrap">
+                <p className="text-foreground text-[1.25rem] text-wrap">
                   Bubble Tea Time is committed to providing its customers the
                   freshest tasting drinks
                 </p>
@@ -79,12 +79,12 @@ export default function Home() {
           </div>
         </section>
         <div>
-          <div className="items-center flex justify-center mt-[40px] mb-[16px]">
+          <div className="items-center flex justify-center mt-[1.25rem] md:mt-[2.5rem] md:mb-[1rem]">
             <h3>Menu</h3>
           </div>
           <Menu showAll={false} />
         </div>
-        <section className="space-y-[40px]">
+        <section className="space-y-[2.5rem]">
           {infoSections.map((infoSection, index) => (
             <InfoSection
               key={index}

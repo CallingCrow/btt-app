@@ -29,24 +29,24 @@ const MenuCard = ({id, name, type, price, image, descriptionS, descriptionL, isA
 
   return (
     <div>
-      <Card onClick={openModal} className='py-0 pl-[15px] flex flex-row justify-between rounded-[10px] h-[140px] cursor-pointer'>
+      <Card onClick={openModal} className='py-0 pl-[1rem] flex flex-row justify-between rounded-[0.625rem] h-[8.75rem] cursor-pointer'>
           <div className='flex flex-col justify-between text-wrap w-full'>
-              <CardHeader className='pt-[20px] gap-y-[6px]'>
-                  <CardTitle className='!text-[16px] line-clamp-2'>{name}</CardTitle>
-                  <CardDescription className='!text-[14px] line-clamp-2'>{descriptionS}</CardDescription>
+              <CardHeader className='pt-[1.25rem] gap-y-[0.375rem]'>
+                  <CardTitle className='!text-[1rem] line-clamp-2'>{name}</CardTitle>
+                  <CardDescription className='!text-[0.875rem] line-clamp-2'>{descriptionS}</CardDescription>
               </CardHeader>
               <CardFooter className=''>
-              <p className='pb-[20px] text-[14px]'>${price}</p>
+              <p className='pb-[1.25rem] text-[0.875rem]'>${price}</p>
               </CardFooter>
           </div>
-          <CardContent className='px-0 max-w-[120px]'>
+          <CardContent className='px-0 max-w-[11.25rem]'>
               {image===null || image==="" ? (
                 <div></div>
               ) : (
                 <img
                 src={image}
                 alt='Banner'
-                className='size-full rounded-r-[10px]'
+                className='size-full rounded-r-[0.625rem]'
                 />
               )}
 
