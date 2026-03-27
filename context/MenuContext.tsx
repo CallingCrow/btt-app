@@ -7,9 +7,8 @@
     export type MenuItem = {
         id: number;
         name: string;
-        category: number;
-        priceR: number;
-        priceL: number;
+        category_id: number;
+        price: number;
         image: string;
         descriptionS: string;
         descriptionL: string;
@@ -40,18 +39,18 @@
         .select(`
             id,
             name,
-            category,
-            priceR,
-            priceL,
+            category_id,
+            price,
             image,
             descriptionS,
             descriptionL,
             menu_categories (
                 id,
+                display_order,
                 name
             )
         `)
-        .order("category");
+        .order("category_id")
         .order("name");
 
         if (error) {
@@ -89,7 +88,7 @@
         const map = new Map<number, MenuItem[]>();
 
         items.forEach((item) => {  
-            const categoryId = item.category;
+            const categoryId = item.category_id;
             
             if (!categoryId) return;
             if (!map.has(categoryId)) {
@@ -118,11 +117,11 @@
     };
 
     export const useMenu = () => {
-    const context = useContext(MenuContext);
+        const context = useContext(MenuContext);
 
-    if (!context) {
-        throw new Error("useMenu must be used inside MenuProvider");
-    }
+        if (!context) {
+            throw new Error("useMenu must be used inside MenuProvider");
+        }
 
-    return context;
+        return context;
     };

@@ -18,11 +18,10 @@ import { ChangeEvent } from "react";
 interface EditModalProps {
     open: any,
     onOpenChange: any,
-    id: number,
+    id: string,
     name: string,
     type: string,
-    priceR: number,
-    priceL: number,
+    price: number,
     image: string,
     descriptionS: string,
     descriptionL: string,
@@ -31,19 +30,17 @@ interface EditModalProps {
 type MenuItem = {
     name: string;
     type: string;
-    priceR: number;
-    priceL: number;
+    price: number;
     image: string;
     descriptionS: string;
     descriptionL: string;
 };
 
-export function EditModal({ open, onOpenChange, id, name, type, priceR, priceL, image, descriptionS, descriptionL }: EditModalProps) {
+export function EditModal({ open, onOpenChange, id, name, type, price, image, descriptionS, descriptionL }: EditModalProps) {
     const [newItem, setNewItem] = useState<MenuItem>({
         name,
         type,
-        priceR,
-        priceL,
+        price,
         image,
         descriptionS,
         descriptionL

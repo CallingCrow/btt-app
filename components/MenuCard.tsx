@@ -4,18 +4,17 @@ import { EditModal } from './EditModal';
 import { useState } from 'react';
 
 interface MenuCardProps {
-  id: number;
+  id: string;
   name: string;
   type: string;
-  priceR: number;
-  priceL: number;
+  price: number;
   image: string;
   descriptionS: string;
   descriptionL: string;
   isAdmin: boolean;
 } 
 
-const MenuCard = ({id, name, type, priceR, priceL, image, descriptionS, descriptionL, isAdmin}: MenuCardProps) => {
+const MenuCard = ({id, name, type, price, image, descriptionS, descriptionL, isAdmin}: MenuCardProps) => {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const openModal = () => {
@@ -37,7 +36,7 @@ const MenuCard = ({id, name, type, priceR, priceL, image, descriptionS, descript
                   <CardDescription className='!text-[14px] line-clamp-2'>{descriptionS}</CardDescription>
               </CardHeader>
               <CardFooter className=''>
-              <p className='pb-[20px] text-[14px]'>${priceR}</p>
+              <p className='pb-[20px] text-[14px]'>${price}</p>
               </CardFooter>
           </div>
           <CardContent className='px-0 max-w-[120px]'>
@@ -53,8 +52,8 @@ const MenuCard = ({id, name, type, priceR, priceL, image, descriptionS, descript
 
           </CardContent>
       </Card>
-      <CustomizeModal open={isCustomizeModalOpen} onOpenChange={setIsCustomizeModalOpen} name={name} priceR={priceR} image={image} descriptionL={descriptionL} />
-      <EditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} id={id} name={name} type={type} priceR={priceR} priceL={priceL} image={image} descriptionS={descriptionS} descriptionL={descriptionL}></EditModal>
+      <CustomizeModal open={isCustomizeModalOpen} onOpenChange={setIsCustomizeModalOpen} id={id} name={name} price={price} image={image} descriptionL={descriptionL} />
+      <EditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} id={id} name={name} type={type} price={price} image={image} descriptionS={descriptionS} descriptionL={descriptionL}></EditModal>
     </div>
   )
 }
