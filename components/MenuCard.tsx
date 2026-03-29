@@ -6,7 +6,7 @@ import { useState } from 'react';
 interface MenuCardProps {
   id: string;
   name: string;
-  type: string;
+  category_id: string;
   price: number;
   image: string;
   descriptionS: string;
@@ -14,7 +14,14 @@ interface MenuCardProps {
   isAdmin: boolean;
 } 
 
-const MenuCard = ({id, name, type, price, image, descriptionS, descriptionL, isAdmin}: MenuCardProps) => {
+const formatCurrency = (cents: number) => {
+    return new Intl.NumberFormat("en-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(cents / 100);
+};
+
+const MenuCard = ({id, name, category_id, price, image, descriptionS, descriptionL, isAdmin}: MenuCardProps) => {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const openModal = () => {
@@ -36,24 +43,24 @@ const MenuCard = ({id, name, type, price, image, descriptionS, descriptionL, isA
                   <CardDescription className='!text-[0.875rem] line-clamp-2'>{descriptionS}</CardDescription>
               </CardHeader>
               <CardFooter className=''>
-              <p className='pb-[1.25rem] text-[0.875rem]'>${price}</p>
+              <p className='pb-[1.25rem] text-[0.875rem]'>{formatCurrency(price)}</p>
               </CardFooter>
           </div>
-          <CardContent className='px-0 max-w-[11.25rem]'>
+          <CardContent className='px-0 w-full max-w-[10rem] h-auto flex justify-end'>
               {image===null || image==="" ? (
                 <div></div>
               ) : (
                 <img
                 src={image}
                 alt='Banner'
-                className='size-full rounded-r-[0.625rem]'
+                className='size-full w-auto rounded-r-[0.625rem] object-contain'
                 />
               )}
 
           </CardContent>
       </Card>
       <CustomizeModal open={isCustomizeModalOpen} onOpenChange={setIsCustomizeModalOpen} id={id} name={name} price={price} image={image} descriptionL={descriptionL} />
-      <EditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} id={id} name={name} type={type} price={price} image={image} descriptionS={descriptionS} descriptionL={descriptionL}></EditModal>
+      {/* <EditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} id={id} name={name} price={price} image={image} descriptionS={descriptionS} descriptionL={descriptionL}></EditModal> */}
     </div>
   )
 }

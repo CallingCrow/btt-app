@@ -30,20 +30,21 @@ export function NavBar() {
         {/* Mobile Layout */}
         <div className="md:hidden flex justify-between items-center mx-[1.25rem] h-[3rem]">
           <Brand />
-          <div className="flex gap-x-[1.25rem]">
-            <CartIcon w={28} h={28}></CartIcon>
-            <button onClick={openMenuModal}><HamburgerIcon w={28} h={28}></HamburgerIcon></button>
+          <div className="flex gap-x-[0.5rem] items-center">
+            {/* TO DO: INTERACTIVE CART BUTTON */}
+            <button className="cursor-pointer"><CartIcon w={28} h={28}></CartIcon></button>
+            <button onClick={openMenuModal} className="cursor-pointer"><HamburgerIcon w={28} h={28}></HamburgerIcon></button>
           </div>
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden md:mx-[2.5rem] lg:mx-[6rem] md:flex flex justify-between h-[4rem] items-center">
+        <div className="hidden md:mx-[2.5rem] lg:mx-[6rem] md:flex flex justify-between h-[3.5rem] items-center">
           <Brand />
           <div className="flex gap-x-[1.25rem] lg:gap-x-[1.875rem] text-[1.25rem]">
-            <Link href="/">Home</Link>
-            <Link href="/menu">Menu</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/about">About</Link>
+            <Link href="/" className="hover:text-primary">Home</Link>
+            <Link href="/menu" className="hover:text-primary">Menu</Link>
+            <Link href="/contact" className="hover:text-primary">Contact</Link>
+            <Link href="/about" className="hover:text-primary">About</Link>
           </div>
           <div className="flex items-center gap-x-[0.625rem] lg:gap-x-[1.25rem]">
             <Button size="lg">Order Now</Button>

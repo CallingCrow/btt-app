@@ -24,13 +24,21 @@ interface CustomizeModalProps {
     descriptionL: string,
 }
 
+const formatCurrency = (cents: number) => {
+    return new Intl.NumberFormat("en-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(cents / 100);
+};
+
 export function CustomizeModal({ open, onOpenChange, id, name, price, image, descriptionL }: CustomizeModalProps) {
     const [loading, setLoading] = useState(false);
     const [customizations, setCustomizations] = useState<any[]>([]);
     const [defaultsMap, setDefaultsMap] = useState<Record<string, any>>({});
     const [selectedOptions, setSelectedOptions] = useState<Record<string, any[]>>({});
     const [quantity, setQuantity] = useState(1);
-    const [finalPrice, setFinalPrice] = useState();
+    const [finalPrice, setFinalPrice] = useState<number>(price||0);
+
 
     useEffect(() => {
         if (!open) return;
@@ -39,7 +47,7 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
             try {
                 setLoading(true);
 
-                // 1️⃣ Fetch the menu item to get its category
+                // Fetch the menu item, get its category
                 const { data: item, error: itemError } = await supabase
                     .from("menu")
                     .select("id, category_id")
@@ -52,16 +60,16 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                     return;
                 }
 
-                // 2️⃣ Fetch all groups linked to this category via the join table
+                // Fetch all groups linked to this category via the join table
                 const { data: categoryGroups, error: categoryGroupsError } = await supabase
                     .from("category_customization_groups")
                     .select(`
                         group_id (
-                        id,
-                        name,
-                        is_required,
-                        min_select,
-                        max_select
+                            id,
+                            name,
+                            is_required,
+                            min_select,
+                            max_select
                         )
                     `)
                     .eq("category_id", item.category_id);
@@ -72,14 +80,25 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                     return;
                 }
 
-                const groupsList = (categoryGroups || []).map(cg => cg.group_id);
+                type Group = {
+                    id: number;
+                    name: string;
+                    is_required: boolean;
+                    min_select: number;
+                    max_select: number;
+                };
+
+                // unwrap array
+                const groupsList = ((categoryGroups || [])
+                    .map((cg: any) => cg.group_id)
+                    .filter(Boolean)) as Group[];
 
                 if (groupsList.length === 0) {
                     setCustomizations([]);
                     return;
                 }
 
-                // 3️⃣ Fetch all options for all groups at once (only if groupIds exist)
+                // Fetch all options for all groups at once (only if groupIds exist)
                 const groupIds = groupsList.map(g => g.id);
                 let options: any[] = [];
 
@@ -96,35 +115,35 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                     }
                 }
 
-                // 4️⃣ Merge options into groups
+                // Merge options into groups
                 const groupsWithOptions = groupsList.map(group => ({
                     ...group,
-                    options: options.filter(o => o.group_id === group.id)
+                    options: (options || []).filter(o => o.group_id === group.id)
                 }));
 
                 setCustomizations(groupsWithOptions);
 
-                // 5️⃣ Fetch defaults for this menu item
+                // Fetch defaults
                 const { data: defaults, error: defaultsError } = await supabase
                     .from("customization_defaults")
-                    .select("option_id, price_override, customization_options(id, group_id)")
+                    .select("option_id, price_override, is_removable, customization_options(id, group_id)")
                     .eq("item_id", id);
 
                 if (defaultsError) {
                     console.error("Error fetching defaults:", defaultsError);
                 }
 
-                // 6️⃣ Build defaults map for quick lookup
+                // Build defaults map for quick lookup
                 const map: Record<string, any> = {};
                 (defaults || []).forEach(d => {
                     map[d.option_id] = d;
                 });
                 setDefaultsMap(map);
 
-                // 7️⃣ Preselect defaults in frontend state
+                // Preselect defaults in frontend state
                 const initialSelected: Record<string, any[]> = {};
                 (defaults || []).forEach(d => {
-                    const groupId = d.customization_options?.group_id;
+                    const groupId = d.customization_options?.[0]?.group_id;
                     if (!groupId) return; // safety check
 
                     if (!initialSelected[groupId]) {
@@ -151,7 +170,7 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
 
     useEffect(() => {
         //passed in price
-        let total = price;
+        let total = Number(price) || 0;
 
         Object.values(selectedOptions).forEach((group: any) => {
             group.forEach((opt: any) => {
@@ -163,7 +182,7 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                         .find(o => o.id === opt.optionId);
 
                     if (option) {
-                        total += option.price;
+                        total += Number(option.price) || 0;
                     }
                 }
             });
@@ -181,68 +200,35 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
         }
     }
 
-    //total = base_price + sum(selectedOptions.price_adjustment)
-    /*
-    Pricing logic
-    function getOptionPrice(optionId, defaultsMap) {
-        const defaultEntry = defaultsMap[optionId];
-
-        if (defaultEntry) {
-            return defaultEntry.price_override ?? option.price_adjustment;
-        }
-
-        return option.price_adjustment;
-    }
-
-    //must distinguish between default selection and user-added slection
-    in frontend state:
-    {
-        optionId: "boba_id",
-        isDefault: true
-    }
-
-    */
-
-    /*
-    Selecting defaults
-
-    const [selectedOptions, setSelectedOptions] = useState({})
-    defaults.forEach(opt => {
-    setSelectedOptions(prev => ({
-        ...prev,
-        [opt.group_id]: [...(prev[opt.group_id] || []), opt.id]
-    }))
-    })
-
-
-    */
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-
-            <DialogContent className="flex w-[70vw] h-[80vh]">
-                <div>
+            <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[70vw] md:h-[80vh]">
+                <div className="w-auto h-auto flex">
                     {/* Image */}
-                    <img
+                    {image===null || image==="" ? (
+                        <div></div>
+                    ) : (
+                        <img
                         src={image}
                         alt='Image of Drink'
-                        className='size-full rounded-l-lg w-auto'
-                    />
+                        className='size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
+                        />
+                    )}
                 </div>
-                <div>
+                <div className="w-full h-full flex flex-col justify-between">
                     <DialogHeader className="py-4 ml-[2.5rem]">
-                        <DialogTitle><h5>{name}</h5></DialogTitle>
-                        <DialogDescription>
-                            <h5>
-                                ${finalPrice}
-                            </h5>
-                            <p className="text-muted-foreground">
+                        <DialogTitle className="text-[1.25rem]">{name}</DialogTitle>
+                        <DialogDescription className="flex flex-col">
+                            <span className="text-[1.25rem]">
+                                {formatCurrency(finalPrice)}
+                            </span>
+                            <span className="text-muted-foreground">
                                 {descriptionL}
-                            </p>
+                            </span>
                         </DialogDescription>
                     </DialogHeader>
                     <div className="bg-gray-100 px-[2.5rem]">
-                        <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4 py-4">
+                        <div className="-mx-4 no-scrollbar max-h-[40vh] overflow-y-auto px-4 py-4">
                             <span className="text-[1.25rem]">Customize your item</span>
                             {loading ? (
                                 <p>Loading...</p>
@@ -259,16 +245,16 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                             )}
                         </div>
                     </div>
-                    <DialogFooter className="pb-4 pr-4 ml-[2.5rem]">
-                        <div className="flex justify-between w-full mt-4">
-                            <div className="flex gap-x-2">
+                    <DialogFooter className="pb-4 pr-4 px-[2.5rem]">
+                        <div className="flex justify-between w-full mt-4 items-center">
+                            <div className="flex gap-x-1 items-center">
                                 <button onClick={handleMinus} className="cursor-pointer"><CircleMinus /></button>
                                 <h5>{quantity}</h5>
                                 <button onClick={handlePlus} className="cursor-pointer"><CirclePlus /></button>
                             </div>
 
                             <DialogClose asChild>
-                                <Button variant="default" size="md" className="px-10 cursor-pointer">Add to Cart</Button>
+                                <Button variant="default" size="lg" className="px-10 cursor-pointer">Add to Cart</Button>
                             </DialogClose>
                         </div>
                     </DialogFooter>
@@ -341,10 +327,16 @@ const CustomizeBlock = ({ group, selectedOptions, setSelectedOptions, defaultsMa
             <h6>{group.name}</h6>
             <div className="text-muted-foreground"> Select {group.min_select != group.max_select ? `${group.min_select} - ${group.max_select}` : `${group.min_select}`} </div>
 
-            {group.options.map((opt: any, key: any) => {
+            {(group.options || []).map((opt: any, key: any) => {
                 const selected = (selectedOptions[group.id] || []).some(
                     (o: any) => o.optionId === opt.id
                 );
+
+                const defaultData = defaultsMap[opt.id];
+                let displayPrice = opt.price;
+                if (defaultData && defaultData.price_override !== null) {
+                    displayPrice = defaultData.price_override;
+                }
 
                 const isSingle = group.max_select === 1;
                 const isLocked =
@@ -357,7 +349,7 @@ const CustomizeBlock = ({ group, selectedOptions, setSelectedOptions, defaultsMa
                         <label key={opt.id} className="flex justify-between items-center gap-2 cursor-pointer">
                             <span className="flex flex-col">
                                 {opt.name} 
-                                <span className="text-muted-foreground">+${opt.price}</span>
+                                <span className="text-muted-foreground">+{formatCurrency(displayPrice)}</span>
                             </span>
                             <input
                                 type={isSingle ? "radio" : "checkbox"}

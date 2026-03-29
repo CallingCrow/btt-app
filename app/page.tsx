@@ -67,10 +67,10 @@ export default function Home() {
                   freshest tasting drinks
                 </p>
                 <div className="flex justify-center lg:justify-start gap-4">
-                  <Button variant="default" size="lg">
+                  <Button variant="default" size="lg" className="cursor-pointer">
                     Order Pickup
                   </Button>
-                  <Button variant="secondary" size="lg">
+                  <Button variant="secondary" size="lg" className="cursor-pointer">
                     Order Delivery
                   </Button>
                 </div>

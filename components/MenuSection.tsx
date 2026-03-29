@@ -1,14 +1,17 @@
 import MenuCard from "./MenuCard";
 
 interface MenuItem {
-  id: number;
+  id: string;
   name: string;
-  type: string;
-  priceR: number;
-  priceL: number;
+  category_id: string;
+  price: number;
   image: string;
   descriptionS: string;
   descriptionL: string;
+  menu_categories: {
+    id: string;
+    name: string;
+  };
 }
 
 interface MenuSectionProps {
@@ -29,9 +32,8 @@ const MenuSection = ({type, items, showHeader, isAdmin}: MenuSectionProps) => {
             key={index}
             id={item.id}
             name={item.name}
-            type={item.type}
-            priceR={item.priceR}
-            priceL={item.priceL}
+            category_id={item.category_id}
+            price={item.price}
             image={item.image}
             descriptionS={item.descriptionS}
             descriptionL={item.descriptionL}

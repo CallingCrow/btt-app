@@ -21,7 +21,7 @@ export const InfoSection = ({
       <div
         className={`sm:grid sm:grid-cols-2 gap-x-[40px] md:gap-x-[80px] px-[20px] md:px-[40px] lg:px-[96px] py-[20px] md:py-[60px] ${bgPrimary ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
       >
-        <div className="md:mt-[40px] space-y-[16px]">
+        <div className="md:mt-[40px] space-y-[16px] lg:max-w-[35vw]">
           <h2>{header}</h2>
           <p className="leading-8">{text}</p>
         </div>
@@ -50,7 +50,7 @@ export const InfoSection = ({
             )}
           </div>
         </div>
-        <div className="mt-[20px] md:mt-[40px] space-y-[16px]">
+        <div className="mt-[20px] md:mt-[40px] space-y-[16px] lg:max-w-[40vw]">
           <h2>{header}</h2>
           <p className="leading-8">{text}</p>
         </div>

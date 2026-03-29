@@ -5,23 +5,23 @@
     import { useMemo } from "react";
 
     export type MenuItem = {
-        id: number;
+        id: string;
         name: string;
-        category_id: number;
+        category_id: string;
         price: number;
         image: string;
         descriptionS: string;
         descriptionL: string;
         menu_categories: {
-            id: number;
+            id: string;
             name: string;
         };
     };
 
     type MenuContextType = {
         items: MenuItem[];
-        groupedItems: Map<number, MenuItem[]>;
-        categories: { id: number; name: string }[];
+        groupedItems: Map<string, MenuItem[]>;
+        categories: { id: string; name: string }[];
         loading: boolean;
         refetch: () => Promise<void>;
     };
@@ -30,7 +30,7 @@
 
     export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
     const [items, setItems] = useState<MenuItem[]>([]);
-    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchMenu = async () => {
@@ -85,7 +85,7 @@
     }, []);
 
     const groupedItems = useMemo(() => {
-        const map = new Map<number, MenuItem[]>();
+        const map = new Map<string, MenuItem[]>();
 
         items.forEach((item) => {  
             const categoryId = item.category_id;

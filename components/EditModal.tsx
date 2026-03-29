@@ -29,24 +29,22 @@ interface EditModalProps {
 
 type MenuItem = {
     name: string;
-    type: string;
     price: number;
     image: string;
     descriptionS: string;
     descriptionL: string;
 };
 
-export function EditModal({ open, onOpenChange, id, name, type, price, image, descriptionS, descriptionL }: EditModalProps) {
+export function EditModal({ open, onOpenChange, id, name, price, image, descriptionS, descriptionL }: EditModalProps) {
     const [newItem, setNewItem] = useState<MenuItem>({
         name,
-        type,
         price,
         image,
         descriptionS,
         descriptionL
     });
 
-    const deleteItem = async (id: number) => {
+    const deleteItem = async (id: string) => {
         const { error } = await supabase.from("menu").delete().eq("id", id);
 
         if (error) {
@@ -55,7 +53,7 @@ export function EditModal({ open, onOpenChange, id, name, type, price, image, de
         }
     }
 
-    const updateItem = async (id: number) => {
+    const updateItem = async (id: string) => {
         let imageUrl: string | null = null;
         if (menuImage) {
             //call Supabase to send to storage
@@ -136,12 +134,14 @@ export function EditModal({ open, onOpenChange, id, name, type, price, image, de
                                             setNewItem((prev) => ({ ...prev, name: e.target.value }))
                                         } />
                                     </div>
+                                    {/*
                                     <div>
                                         <label>Drink Type</label>
                                         <input type="text" placeholder="drink type" value={newItem.type} onChange={(e) =>
                                             setNewItem((prev) => ({ ...prev, type: e.target.value }))
                                         } />
                                     </div>
+                                    */}
                                     <div>
                                         <label>Price Regular Size</label>
                                         <input type="number" step="0.01" min="0" placeholder="regular size price" value={newItem.priceR} onChange={(e) =>

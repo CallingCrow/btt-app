@@ -32,6 +32,12 @@ const ContactPage = () => {
     fetchcontactInfoList();
   }, []);
 
+  const { data } = supabase
+    .storage
+    .from('misc-images')
+    .getPublicUrl('map.png');
+  const mapUrl = data.publicUrl;
+
   return (
     <div>
       <header className="sticky z-50 top-0 bg-white">
@@ -50,10 +56,10 @@ const ContactPage = () => {
             className="object-cover"
           /> */}
         </section>
-        <section className="space-y-[2.5rem] bg-secondary">
-          <div className='px-[1.25rem] md:px-[2.5rem] lg:px-[6rem] grid grid-rows-2 md:grid-cols-2 gap-x-[2.5rem]'>
+        <section className="space-y-[2.5rem] bg-secondary h-[56rem] sm:h-[28rem] md:h-[32rem]">
+          <div className='pt-[3.75rem] px-[1.25rem] md:px-[2.5rem] lg:px-[6rem] grid grid-rows-2 sm:grid-cols-2 gap-x-[2.5rem] sm:gap-y-[3rem]'>
             <div>
-              <h4 className='pt-[3.75rem] pb-[1.25rem]'>Get in Touch</h4>
+              <h4 className='pb-[1.25rem]'>Get in Touch</h4>
               {contactInfoList.map((contactInfo, key) => (
                 <div key={key} className='py-[0.625rem] max-w-[18.75rem]'>
                   <h6 className=''>{contactInfo.name}:</h6>
@@ -63,7 +69,11 @@ const ContactPage = () => {
             </div>
             <div className='flex justify-center'>
               {/* map here */}
-              Test2
+              <img
+                src={mapUrl}
+                alt="Map"
+                className="w-full h-auto rounded-lg object-cover"
+              />
             </div>
           </div>
         </section>
