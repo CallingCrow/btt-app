@@ -1,69 +1,77 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { CirclePlus, CircleMinus } from "lucide-react";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { supabase } from "@/app/supabase-client";
-
+import { useCart } from "@/context/CartContext";
+import buildCartItem from "@/utils/buildCartItem";
+import { formatCurrency } from "@/lib/utils";
 
 interface CustomizeModalProps {
-    open: boolean,
-    onOpenChange: (open: boolean) => void,
-    id: string,
-    name: string,
-    price: number,
-    image: string,
-    descriptionL: string,
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  descriptionL: string;
 }
 
-const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat("en-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
-};
+export function CustomizeModal({
+  open,
+  onOpenChange,
+  id,
+  name,
+  price,
+  image,
+  descriptionL,
+}: CustomizeModalProps) {
+  const [loading, setLoading] = useState(false);
+  const [customizations, setCustomizations] = useState<any[]>([]);
+  const [defaultsMap, setDefaultsMap] = useState<Record<string, any>>({});
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, any[]>>(
+    {},
+  );
+  const [quantity, setQuantity] = useState(1);
+  const [finalPrice, setFinalPrice] = useState<number>(price || 0);
 
-export function CustomizeModal({ open, onOpenChange, id, name, price, image, descriptionL }: CustomizeModalProps) {
-    const [loading, setLoading] = useState(false);
-    const [customizations, setCustomizations] = useState<any[]>([]);
-    const [defaultsMap, setDefaultsMap] = useState<Record<string, any>>({});
-    const [selectedOptions, setSelectedOptions] = useState<Record<string, any[]>>({});
-    const [quantity, setQuantity] = useState(1);
-    const [finalPrice, setFinalPrice] = useState<number>(price||0);
+  const { addToCart } = useCart();
 
+  useEffect(() => {
+    if (!open) return;
 
-    useEffect(() => {
-        if (!open) return;
+    async function fetchData() {
+      try {
+        setLoading(true);
 
-        async function fetchData() {
-            try {
-                setLoading(true);
+        // Fetch the menu item, get its category
+        const { data: item, error: itemError } = await supabase
+          .from("menu")
+          .select("id, category_id")
+          .eq("id", id)
+          .single();
 
-                // Fetch the menu item, get its category
-                const { data: item, error: itemError } = await supabase
-                    .from("menu")
-                    .select("id, category_id")
-                    .eq("id", id)
-                    .single();
+        if (itemError || !item) {
+          console.error("Menu item not found", itemError);
+          setCustomizations([]);
+          return;
+        }
 
-                if (itemError || !item) {
-                    console.error("Menu item not found", itemError);
-                    setCustomizations([]);
-                    return;
-                }
-
-                // Fetch all groups linked to this category via the join table
-                const { data: categoryGroups, error: categoryGroupsError } = await supabase
-                    .from("category_customization_groups")
-                    .select(`
+        // Fetch all groups linked to this category via the join table
+        const { data: categoryGroups, error: categoryGroupsError } =
+          await supabase
+            .from("category_customization_groups")
+            .select(
+              `
                         group_id (
                             id,
                             name,
@@ -71,296 +79,344 @@ export function CustomizeModal({ open, onOpenChange, id, name, price, image, des
                             min_select,
                             max_select
                         )
-                    `)
-                    .eq("category_id", item.category_id);
+                    `,
+            )
+            .eq("category_id", item.category_id);
 
-                if (categoryGroupsError) {
-                    console.error("Error fetching category groups:", categoryGroupsError);
-                    setCustomizations([]);
-                    return;
-                }
-
-                type Group = {
-                    id: number;
-                    name: string;
-                    is_required: boolean;
-                    min_select: number;
-                    max_select: number;
-                };
-
-                // unwrap array
-                const groupsList = ((categoryGroups || [])
-                    .map((cg: any) => cg.group_id)
-                    .filter(Boolean)) as Group[];
-
-                if (groupsList.length === 0) {
-                    setCustomizations([]);
-                    return;
-                }
-
-                // Fetch all options for all groups at once (only if groupIds exist)
-                const groupIds = groupsList.map(g => g.id);
-                let options: any[] = [];
-
-                if (groupIds.length > 0) {
-                    const { data: optionsData, error: optionsError } = await supabase
-                        .from("customization_options")
-                        .select("id, name, price, group_id")
-                        .in("group_id", groupIds);
-
-                    if (optionsError) {
-                        console.error("Error fetching customization options:", optionsError);
-                    } else {
-                        options = optionsData || [];
-                    }
-                }
-
-                // Merge options into groups
-                const groupsWithOptions = groupsList.map(group => ({
-                    ...group,
-                    options: (options || []).filter(o => o.group_id === group.id)
-                }));
-
-                setCustomizations(groupsWithOptions);
-
-                // Fetch defaults
-                const { data: defaults, error: defaultsError } = await supabase
-                    .from("customization_defaults")
-                    .select("option_id, price_override, is_removable, customization_options(id, group_id)")
-                    .eq("item_id", id);
-
-                if (defaultsError) {
-                    console.error("Error fetching defaults:", defaultsError);
-                }
-
-                // Build defaults map for quick lookup
-                const map: Record<string, any> = {};
-                (defaults || []).forEach(d => {
-                    map[d.option_id] = d;
-                });
-                setDefaultsMap(map);
-
-                // Preselect defaults in frontend state
-                const initialSelected: Record<string, any[]> = {};
-                (defaults || []).forEach(d => {
-                    const groupId = d.customization_options?.[0]?.group_id;
-                    if (!groupId) return; // safety check
-
-                    if (!initialSelected[groupId]) {
-                        initialSelected[groupId] = [];
-                    }
-
-                    initialSelected[groupId].push({
-                        optionId: d.option_id,
-                        isDefault: true
-                    });
-                });
-
-                setSelectedOptions(initialSelected);
-
-            } catch (err) {
-                console.error("Unexpected error fetching customization data:", err);
-            } finally {
-                setLoading(false);
-            }
+        if (categoryGroupsError) {
+          console.error("Error fetching category groups:", categoryGroupsError);
+          setCustomizations([]);
+          return;
         }
 
-        fetchData();
-    }, [open, id]);
+        type Group = {
+          id: number;
+          name: string;
+          is_required: boolean;
+          min_select: number;
+          max_select: number;
+        };
 
-    useEffect(() => {
-        //passed in price
-        let total = Number(price) || 0;
+        // unwrap array
+        const groupsList = (categoryGroups || [])
+          .map((cg: any) => cg.group_id)
+          .filter(Boolean) as Group[];
 
-        Object.values(selectedOptions).forEach((group: any) => {
-            group.forEach((opt: any) => {
-                if (opt.isDefault && defaultsMap[opt.optionId]?.price_override !== null) {
-                    total += defaultsMap[opt.optionId].price_override;
-                } else {
-                    const option = customizations
-                        .flatMap(g => g.options)
-                        .find(o => o.id === opt.optionId);
+        if (groupsList.length === 0) {
+          setCustomizations([]);
+          return;
+        }
 
-                    if (option) {
-                        total += Number(option.price) || 0;
-                    }
-                }
-            });
+        // Fetch all options for all groups at once (only if groupIds exist)
+        const groupIds = groupsList.map((g) => g.id);
+        let options: any[] = [];
+
+        if (groupIds.length > 0) {
+          const { data: optionsData, error: optionsError } = await supabase
+            .from("customization_options")
+            .select("id, name, price, group_id")
+            .in("group_id", groupIds);
+
+          if (optionsError) {
+            console.error(
+              "Error fetching customization options:",
+              optionsError,
+            );
+          } else {
+            options = optionsData || [];
+          }
+        }
+
+        // Merge options into groups
+        const groupsWithOptions = groupsList.map((group) => ({
+          ...group,
+          options: (options || []).filter((o) => o.group_id === group.id),
+        }));
+
+        setCustomizations(groupsWithOptions);
+
+        // Fetch defaults
+        const { data: defaults, error: defaultsError } = await supabase
+          .from("customization_defaults")
+          .select(
+            "option_id, price_override, is_removable, customization_options(id, group_id)",
+          )
+          .eq("item_id", id);
+
+        if (defaultsError) {
+          console.error("Error fetching defaults:", defaultsError);
+        }
+
+        // Build defaults map for quick lookup
+        const map: Record<string, any> = {};
+        (defaults || []).forEach((d) => {
+          map[d.option_id] = d;
+        });
+        setDefaultsMap(map);
+
+        // Preselect defaults in frontend state
+        const initialSelected: Record<string, any[]> = {};
+        (defaults || []).forEach((d) => {
+          const groupId = d.customization_options?.[0]?.group_id;
+          if (!groupId) return; // safety check
+
+          if (!initialSelected[groupId]) {
+            initialSelected[groupId] = [];
+          }
+
+          initialSelected[groupId].push({
+            optionId: d.option_id,
+            isDefault: true,
+          });
         });
 
-        setFinalPrice(total);
-    }, [selectedOptions, customizations]);
-
-    function handlePlus() {
-        setQuantity(a => a + 1);
+        setSelectedOptions(initialSelected);
+      } catch (err) {
+        console.error("Unexpected error fetching customization data:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-    function handleMinus() {
-        if (quantity > 1) {
-            setQuantity(a => a - 1);
+
+    fetchData();
+  }, [open, id]);
+
+  useEffect(() => {
+    //passed in price
+    let total = Number(price) || 0;
+
+    Object.values(selectedOptions).forEach((group: any) => {
+      group.forEach((opt: any) => {
+        if (
+          opt.isDefault &&
+          defaultsMap[opt.optionId]?.price_override !== null
+        ) {
+          total += defaultsMap[opt.optionId].price_override;
+        } else {
+          const option = customizations
+            .flatMap((g) => g.options)
+            .find((o) => o.id === opt.optionId);
+
+          if (option) {
+            total += Number(option.price) || 0;
+          }
         }
+      });
+    });
+
+    setFinalPrice(total);
+  }, [selectedOptions, customizations]);
+
+  function handlePlus() {
+    setQuantity((a) => a + 1);
+  }
+  function handleMinus() {
+    if (quantity > 1) {
+      setQuantity((a) => a - 1);
     }
+  }
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[70vw] md:h-[80vh]">
-                <div className="w-auto h-auto flex">
-                    {/* Image */}
-                    {image===null || image==="" ? (
-                        <div></div>
-                    ) : (
-                        <img
-                        src={image}
-                        alt='Image of Drink'
-                        className='size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
-                        />
-                    )}
-                </div>
-                <div className="w-full h-full flex flex-col justify-between">
-                    <DialogHeader className="py-4 ml-[2.5rem]">
-                        <DialogTitle className="text-[1.25rem]">{name}</DialogTitle>
-                        <DialogDescription className="flex flex-col">
-                            <span className="text-[1.25rem]">
-                                {formatCurrency(finalPrice)}
-                            </span>
-                            <span className="text-muted-foreground">
-                                {descriptionL}
-                            </span>
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="bg-gray-100 px-[2.5rem]">
-                        <div className="-mx-4 no-scrollbar max-h-[40vh] overflow-y-auto px-4 py-4">
-                            <span className="text-[1.25rem]">Customize your item</span>
-                            {loading ? (
-                                <p>Loading...</p>
-                            ) : (
-                                customizations.map(group => (
-                                    <CustomizeBlock
-                                        key={group.id}
-                                        group={group}
-                                        selectedOptions={selectedOptions}
-                                        setSelectedOptions={setSelectedOptions}
-                                        defaultsMap={defaultsMap}
-                                    />
-                                ))
-                            )}
-                        </div>
-                    </div>
-                    <DialogFooter className="pb-4 pr-4 px-[2.5rem]">
-                        <div className="flex justify-between w-full mt-4 items-center">
-                            <div className="flex gap-x-1 items-center">
-                                <button onClick={handleMinus} className="cursor-pointer"><CircleMinus /></button>
-                                <h5>{quantity}</h5>
-                                <button onClick={handlePlus} className="cursor-pointer"><CirclePlus /></button>
-                            </div>
+  function handleAddToCart() {
+    const item = buildCartItem({
+      name,
+      price,
+      finalPrice,
+      quantity,
+      selectedOptions,
+      customizations,
+    });
 
-                            <DialogClose asChild>
-                                <Button variant="default" size="lg" className="px-10 cursor-pointer">Add to Cart</Button>
-                            </DialogClose>
-                        </div>
-                    </DialogFooter>
-                </div>
-            </DialogContent>
-        </Dialog>
-    )
+    addToCart(item);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[70vw] md:h-[80vh]">
+        <div className="w-auto h-auto flex">
+          {/* Image */}
+          {image === null || image === "" ? (
+            <div></div>
+          ) : (
+            <img
+              src={image}
+              alt="Image of Drink"
+              className="size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain"
+            />
+          )}
+        </div>
+        <div className="w-full h-full flex flex-col justify-between">
+          <DialogHeader className="py-4 ml-[2.5rem]">
+            <DialogTitle className="text-[1.25rem]">{name}</DialogTitle>
+            <DialogDescription className="flex flex-col">
+              <span className="text-[1.25rem]">
+                {formatCurrency(finalPrice)}
+              </span>
+              <span className="text-muted-foreground">{descriptionL}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-gray-100 px-[2.5rem]">
+            <div className="-mx-4 no-scrollbar max-h-[40vh] overflow-y-auto px-4 py-4">
+              <span className="text-[1.25rem]">Customize your item</span>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                customizations.map((group) => (
+                  <CustomizeBlock
+                    key={group.id}
+                    group={group}
+                    selectedOptions={selectedOptions}
+                    setSelectedOptions={setSelectedOptions}
+                    defaultsMap={defaultsMap}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+          <DialogFooter className="pb-4 pr-4 px-[2.5rem]">
+            <div className="flex justify-between w-full mt-4 items-center">
+              <div className="flex gap-x-1 items-center">
+                <button onClick={handleMinus} className="cursor-pointer">
+                  <CircleMinus />
+                </button>
+                <h5>{quantity}</h5>
+                <button onClick={handlePlus} className="cursor-pointer">
+                  <CirclePlus />
+                </button>
+              </div>
+
+              <DialogClose asChild>
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="px-10 cursor-pointer"
+                  onClick={handleAddToCart}
+                >
+                  Add to Cart
+                </Button>
+              </DialogClose>
+            </div>
+          </DialogFooter>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 interface CustomizeBlockProps {
-    group: any;
-    selectedOptions: any;
-    setSelectedOptions: any;
-    defaultsMap: any;
+  group: any;
+  selectedOptions: any;
+  setSelectedOptions: any;
+  defaultsMap: any;
 }
 
-const CustomizeBlock = ({ group, selectedOptions, setSelectedOptions, defaultsMap }: CustomizeBlockProps) => {
+const CustomizeBlock = ({
+  group,
+  selectedOptions,
+  setSelectedOptions,
+  defaultsMap,
+}: CustomizeBlockProps) => {
+  function toggleOption(option: any, group: any) {
+    setSelectedOptions((prev: any) => {
+      const groupSelections = prev[group.id] || [];
 
-    function toggleOption(option: any, group: any) {
-        setSelectedOptions((prev: any) => {
-            const groupSelections = prev[group.id] || [];
+      const exists = groupSelections.find((o: any) => o.optionId === option.id);
 
-            const exists = groupSelections.find((o: any) => o.optionId === option.id);
+      if (exists) {
+        //block removing non-removable default
+        if (
+          exists.isDefault &&
+          defaultsMap[option.id] &&
+          !defaultsMap[option.id].is_removable
+        ) {
+          return prev;
+        }
 
-            if (exists) {
-                //block removing non-removable default
-                if (exists.isDefault && defaultsMap[option.id] && !defaultsMap[option.id].is_removable) {
-                    return prev;
-                }
+        //prevent remove if below min_select
+        if (groupSelections.length <= group.min_select) {
+          return prev;
+        }
 
+        // remove
+        return {
+          ...prev,
+          [group.id]: groupSelections.filter(
+            (o: any) => o.optionId !== option.id,
+          ),
+        };
+      }
 
-                //prevent remove if below min_select
-                if (groupSelections.length <= group.min_select) {
-                    return prev;
-                }
+      //prevent exceed max_select
+      if (groupSelections.length >= group.max_select) {
+        //if single select
+        if (group.max_select === 1) {
+          //add
+          return {
+            ...prev,
+            [group.id]: [{ optionId: option.id, isDefault: false }],
+          };
+        }
+        return prev;
+      }
 
-                // remove
-                return {
-                    ...prev,
-                    [group.id]: groupSelections.filter((o: any) => o.optionId !== option.id)
-                };
-            }
+      //add normally
+      return {
+        ...prev,
+        [group.id]: [
+          ...groupSelections,
+          { optionId: option.id, isDefault: false },
+        ],
+      };
+    });
+  }
 
-            //prevent exceed max_select
-            if (groupSelections.length >= group.max_select) {
-                //if single select
-                if (group.max_select === 1) {
-                    //add
-                    return {
-                        ...prev,
-                        [group.id]: [{ optionId: option.id, isDefault: false }]
-                    };
-                }
-                return prev;
-            }
+  return (
+    <div className="bg-card px-[1.25rem] py-[1.25rem] rounded-lg my-2">
+      <h6>{group.name}</h6>
+      <div className="text-muted-foreground">
+        {" "}
+        Select{" "}
+        {group.min_select != group.max_select
+          ? `${group.min_select} - ${group.max_select}`
+          : `${group.min_select}`}{" "}
+      </div>
 
-            //add normally
-            return {
-                ...prev,
-                [group.id]: [
-                    ...groupSelections,
-                    { optionId: option.id, isDefault: false }
-                ]
-            };
-        });
-    }
+      {(group.options || []).map((opt: any, key: any) => {
+        const selected = (selectedOptions[group.id] || []).some(
+          (o: any) => o.optionId === opt.id,
+        );
 
-    return (
-        <div className="bg-card px-[1.25rem] py-[1.25rem] rounded-lg my-2">
-            <h6>{group.name}</h6>
-            <div className="text-muted-foreground"> Select {group.min_select != group.max_select ? `${group.min_select} - ${group.max_select}` : `${group.min_select}`} </div>
+        const defaultData = defaultsMap[opt.id];
+        let displayPrice = opt.price;
+        if (defaultData && defaultData.price_override !== null) {
+          displayPrice = defaultData.price_override;
+        }
 
-            {(group.options || []).map((opt: any, key: any) => {
-                const selected = (selectedOptions[group.id] || []).some(
-                    (o: any) => o.optionId === opt.id
-                );
+        const isSingle = group.max_select === 1;
+        const isLocked =
+          selected && defaultsMap[opt.id] && !defaultsMap[opt.id].is_removable;
 
-                const defaultData = defaultsMap[opt.id];
-                let displayPrice = opt.price;
-                if (defaultData && defaultData.price_override !== null) {
-                    displayPrice = defaultData.price_override;
-                }
-
-                const isSingle = group.max_select === 1;
-                const isLocked =
-                    selected &&
-                    defaultsMap[opt.id] &&
-                    !defaultsMap[opt.id].is_removable;
-
-                return (
-                    <div key={key} className="mt-1 py-2 border-t-2">
-                        <label key={opt.id} className="flex justify-between items-center gap-2 cursor-pointer">
-                            <span className="flex flex-col">
-                                {opt.name} 
-                                <span className="text-muted-foreground">+{formatCurrency(displayPrice)}</span>
-                            </span>
-                            <input
-                                type={isSingle ? "radio" : "checkbox"}
-                                checked={selected}
-                                disabled={isLocked}
-                                onChange={() => toggleOption(opt, group)}
-                            />
-                        </label>
-                    </div>
-                );
-            })}
-        </div>
-    );
+        return (
+          <div key={key} className="mt-1 py-2 border-t-2">
+            <label
+              key={opt.id}
+              className="flex justify-between items-center gap-2 cursor-pointer"
+            >
+              <span className="flex flex-col">
+                {opt.name}
+                <span className="text-muted-foreground">
+                  +{formatCurrency(displayPrice)}
+                </span>
+              </span>
+              <input
+                type={isSingle ? "radio" : "checkbox"}
+                checked={selected}
+                disabled={isLocked}
+                onChange={() => toggleOption(opt, group)}
+              />
+            </label>
+          </div>
+        );
+      })}
+    </div>
+  );
 };

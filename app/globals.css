@@ -181,6 +181,11 @@ body {
   font-family: Ubuntu, "times new roman", times, roman, serif;
 }
 
+input {
+  border-color: var(--primary);
+  border-width: 1px;
+}
+
 h1 {
   font-size: 2.5rem;
   line-height: 3rem;

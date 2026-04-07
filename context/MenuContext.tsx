@@ -1,127 +1,131 @@
-    "use client";
+"use client";
 
-    import { createContext, useContext, useEffect, useState } from "react";
-    import { supabase } from "@/app/supabase-client";
-    import { useMemo } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "@/app/supabase-client";
+import { useMemo } from "react";
 
-    export type MenuItem = {
-        id: string;
-        name: string;
-        category_id: string;
-        price: number;
-        image: string;
-        descriptionS: string;
-        descriptionL: string;
-        menu_categories: {
-            id: string;
-            name: string;
-        };
-    };
+export type MenuItem = {
+  id: string;
+  name: string;
+  category_id: string;
+  price: number;
+  image: string;
+  descriptionS: string;
+  descriptionL: string;
+  menu_categories: {
+    id: string;
+    name: string;
+  };
+};
 
-    type MenuContextType = {
-        items: MenuItem[];
-        groupedItems: Map<string, MenuItem[]>;
-        categories: { id: string; name: string }[];
-        loading: boolean;
-        refetch: () => Promise<void>;
-    };
+type MenuContextType = {
+  items: MenuItem[];
+  groupedItems: Map<string, MenuItem[]>;
+  categories: { id: string; name: string }[];
+  loading: boolean;
+  refetch: () => Promise<void>;
+};
 
-    const MenuContext = createContext<MenuContextType | null>(null);
+const MenuContext = createContext<MenuContextType | null>(null);
 
-    export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
-    const [items, setItems] = useState<MenuItem[]>([]);
-    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-    const [loading, setLoading] = useState(true);
+export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [loading, setLoading] = useState(true);
 
-    const fetchMenu = async () => {
-        const { data, error } = await supabase
-        .from("menu")
-        .select(`
+  const fetchMenu = async () => {
+    const { data, error } = await supabase
+      .from("menu")
+      .select(
+        `
+        id,
+        name,
+        category_id,
+        price,
+        image,
+        descriptionS,
+        descriptionL,
+        menu_categories (
             id,
-            name,
-            category_id,
-            price,
-            image,
-            descriptionS,
-            descriptionL,
-            menu_categories (
-                id,
-                display_order,
-                name
-            )
-        `)
-        .order("category_id")
-        .order("name");
+            display_order,
+            name
+        )
+    `,
+      )
+      .order("category_id")
+      .order("name");
 
-        if (error) {
-            console.error("Error fetching menu:", error.message);
-            return;
-        }
+    if (error) {
+      console.error("Error fetching menu:", error.message);
+      return;
+    }
 
-        setItems(data || []);
-        setLoading(false);
-    };
+    setItems(data || []);
+    setLoading(false);
+  };
 
-    useEffect(() => {
-        fetchMenu();
-    }, []);
+  useEffect(() => {
+    fetchMenu();
+  }, []);
 
-    const fetchCategories = async () => {
-        const { data, error } = await supabase
-            .from("menu_categories")
-            .select("*")
-            .order("id");
+  const fetchCategories = async () => {
+    const { data, error } = await supabase
+      .from("menu_categories")
+      .select("*")
+      .order("id");
 
-        if (error) {
-            console.error(error);
-            return;
-        }
+    if (error) {
+      console.error(error);
+      return;
+    }
 
-        setCategories(data || []);
-    };
+    setCategories(data || []);
+  };
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-    const groupedItems = useMemo(() => {
-        const map = new Map<string, MenuItem[]>();
+  const groupedItems = useMemo(() => {
+    const map = new Map<string, MenuItem[]>();
 
-        items.forEach((item) => {  
-            const categoryId = item.category_id;
-            
-            if (!categoryId) return;
-            if (!map.has(categoryId)) {
-                map.set(categoryId, []);
-            }
+    items.forEach((item) => {
+      const categoryId = item.category_id;
 
-            map.get(categoryId)!.push(item);
-        });
+      if (!categoryId) return;
+      if (!map.has(categoryId)) {
+        map.set(categoryId, []);
+      }
 
-        return map;
-    }, [items]);
+      map.get(categoryId)!.push(item);
+    });
 
-    return (
-        <MenuContext.Provider
-            value={{
-                items,
-                groupedItems,
-                categories,
-                loading,
-                refetch: fetchMenu,
-            }}
-        >
-        {children}
-        </MenuContext.Provider>
-    );
-    };
+    return map;
+  }, [items]);
 
-    export const useMenu = () => {
-        const context = useContext(MenuContext);
+  return (
+    <MenuContext.Provider
+      value={{
+        items,
+        groupedItems,
+        categories,
+        loading,
+        refetch: fetchMenu,
+      }}
+    >
+      {children}
+    </MenuContext.Provider>
+  );
+};
 
-        if (!context) {
-            throw new Error("useMenu must be used inside MenuProvider");
-        }
+export const useMenu = () => {
+  const context = useContext(MenuContext);
 
-        return context;
-    };
+  if (!context) {
+    throw new Error("useMenu must be used inside MenuProvider");
+  }
+
+  return context;
+};
