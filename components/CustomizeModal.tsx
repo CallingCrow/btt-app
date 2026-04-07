@@ -229,60 +229,78 @@ export function CustomizeModal({
     addToCart(item);
   }
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[70vw] md:h-[80vh]">
-        <div className="w-auto h-auto flex">
-          {/* Image */}
-          {image === null || image === "" ? (
-            <div></div>
-          ) : (
-            <img
-              src={image}
-              alt="Image of Drink"
-              className="size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain"
-            />
-          )}
-        </div>
-        <div className="w-full h-full flex flex-col justify-between">
-          <DialogHeader className="py-4 ml-[2.5rem]">
-            <DialogTitle className="text-[1.25rem]">{name}</DialogTitle>
-            <DialogDescription className="flex flex-col">
-              <span className="text-[1.25rem]">
-                {formatCurrency(finalPrice)}
-              </span>
-              <span className="text-muted-foreground">{descriptionL}</span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="bg-gray-100 px-[2.5rem]">
-            <div className="-mx-4 no-scrollbar max-h-[40vh] overflow-y-auto px-4 py-4">
-              <span className="text-[1.25rem]">Customize your item</span>
-              {loading ? (
-                <p>Loading...</p>
-              ) : (
-                customizations.map((group) => (
-                  <CustomizeBlock
-                    key={group.id}
-                    group={group}
-                    selectedOptions={selectedOptions}
-                    setSelectedOptions={setSelectedOptions}
-                    defaultsMap={defaultsMap}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-          <DialogFooter className="pb-4 pr-4 px-[2.5rem]">
-            <div className="flex justify-between w-full mt-4 items-center">
-              <div className="flex gap-x-1 items-center">
-                <button onClick={handleMinus} className="cursor-pointer">
-                  <CircleMinus />
-                </button>
-                <h5>{quantity}</h5>
-                <button onClick={handlePlus} className="cursor-pointer">
-                  <CirclePlus />
-                </button>
-              </div>
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[70vw] md:h-[80vh]">
+                {/* Image on left only on desktop */}
+                <div className="hidden md:flex">
+                    <div className="w-auto h-auto flex">
+                        {/* Image */}
+                        {image===null || image==="" ? (
+                            <div></div>
+                        ) : (
+                            <img
+                            src={image}
+                            alt='Image of Drink'
+                            className='size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
+                            />
+                        )}
+                    </div>
+                </div>
+
+                <div className="w-full h-full flex flex-col justify-between">
+                    <div className="flex">
+                        {/* Image on left of text only on mobile view */}
+                        <div className="flex md:hidden">
+                            {/* Image */}
+                            {image===null || image==="" ? (
+                                <div></div>
+                            ) : (
+                                <img
+                                src={image}
+                                alt='Image of Drink'
+                                className='size-full max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
+                                />
+                            )}
+                        </div>
+                        <DialogHeader className="py-4 mx-[2.5rem] text-left">
+                            <DialogTitle className="!text-[1.5rem]">{name}</DialogTitle>
+                            <DialogDescription className="flex flex-col -mt-2">
+                                <span className="!text-[1.25rem]">
+                                    {formatCurrency(finalPrice)}
+                                </span>
+                                <span className="text-muted-foreground !text-[0.875rem]">
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur, possimus, est accusantium ullam consectetur, architecto sint quod fuga autem dolores placeat. Hic illo, architecto nulla ipsa minima molestiae soluta iusto.
+                                </span>
+                            </DialogDescription>
+                        </DialogHeader>
+                    </div>
+
+                    <div className="bg-gray-100 px-[2.5rem] h-full overflow-y-auto">
+                        <div className="-mx-4 no-scrollbar max-h-[65vh] min-[32rem]:max-h-[62vh] md:max-h-[48vh] overflow-y-auto px-4 py-4">
+                            <span className="text-[1.25rem]">Customize your item</span>
+                            {loading ? (
+                                <p>Loading...</p>
+                            ) : (
+                                customizations.map(group => (
+                                    <CustomizeBlock
+                                        key={group.id}
+                                        group={group}
+                                        selectedOptions={selectedOptions}
+                                        setSelectedOptions={setSelectedOptions}
+                                        defaultsMap={defaultsMap}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter className="pb-4 px-[2.5rem] h-[3.75rem]">
+                        <div className="flex justify-between w-full mt-4 items-center">
+                            <div className="flex gap-x-1 items-center">
+                                <button onClick={handleMinus} className="cursor-pointer"><CircleMinus /></button>
+                                <h5>{quantity}</h5>
+                                <button onClick={handlePlus} className="cursor-pointer"><CirclePlus /></button>
+                            </div>
 
               <DialogClose asChild>
                 <Button
@@ -395,28 +413,26 @@ const CustomizeBlock = ({
         const isLocked =
           selected && defaultsMap[opt.id] && !defaultsMap[opt.id].is_removable;
 
-        return (
-          <div key={key} className="mt-1 py-2 border-t-2">
-            <label
-              key={opt.id}
-              className="flex justify-between items-center gap-2 cursor-pointer"
-            >
-              <span className="flex flex-col">
-                {opt.name}
-                <span className="text-muted-foreground">
-                  +{formatCurrency(displayPrice)}
-                </span>
-              </span>
-              <input
-                type={isSingle ? "radio" : "checkbox"}
-                checked={selected}
-                disabled={isLocked}
-                onChange={() => toggleOption(opt, group)}
-              />
-            </label>
-          </div>
-        );
-      })}
-    </div>
-  );
+                return (
+                    <div key={key} className="mt-1 py-2 border-t-2">
+                        <label key={opt.id} className="flex flex-row justify-between items-center gap-2 cursor-pointer">
+                            <div className="flex flex-col">
+                                {opt.name} 
+                                <span className="text-muted-foreground">+{formatCurrency(displayPrice)}</span>
+                            </div>
+                            <div className="">
+                                <input
+                                    type={isSingle ? "radio" : "checkbox"}
+                                    checked={selected}
+                                    disabled={isLocked}
+                                    onChange={() => toggleOption(opt, group)}
+                                    className="accent-primary"
+                                />
+                            </div>
+                        </label>
+                    </div>
+                );
+            })}
+        </div>
+    );
 };

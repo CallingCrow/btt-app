@@ -12,7 +12,7 @@ const Menu = ({ showAll }: any) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   function scrollTo(sectionId: string) {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById(sectionId)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }
 
   useEffect(() => {

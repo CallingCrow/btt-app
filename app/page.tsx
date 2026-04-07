@@ -9,6 +9,7 @@ import heroImg from "@/public/Hero.jpg";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase-client";
+import Link from "next/link";
 
 interface infoSection {
   id: number;
@@ -67,9 +68,7 @@ export default function Home() {
                   freshest tasting drinks
                 </p>
                 <div className="flex justify-center lg:justify-start gap-4">
-                  <Button variant="default" size="lg" className="cursor-pointer">
-                    Order Pickup
-                  </Button>
+                  <Link href="/menu"><Button variant="default" size="lg" className="cursor-pointer">Order Pickup</Button></Link>
                   <Button variant="secondary" size="lg" className="cursor-pointer">
                     Order Delivery
                   </Button>
