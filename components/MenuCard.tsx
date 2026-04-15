@@ -36,7 +36,7 @@ const MenuCard = ({id, name, category_id, price, image, descriptionS, descriptio
 
   return (
     <div>
-      <Card onClick={openModal} className='py-0 pl-[1rem] flex flex-row justify-between rounded-[0.625rem] h-[8.75rem] cursor-pointer'>
+      <Card onClick={openModal} className='hover:-translate-y-1 py-0 pl-[1rem] flex flex-row justify-between rounded-[0.625rem] h-[8.75rem] cursor-pointer'>
           <div className='flex flex-col justify-between text-wrap w-full'>
               <CardHeader className='pt-[1.25rem] gap-y-[0.375rem]'>
                   <CardTitle className='!text-[1rem] line-clamp-2'>{name}</CardTitle>

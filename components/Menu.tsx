@@ -33,6 +33,7 @@ const Menu = ({ showAll }: any) => {
                     <button
                       key={category.id}
                       onClick={() => scrollTo(`category-${category.id}`)}
+                      className="cursor-pointer hover:text-primary"
                     >
                       {category.name}
                     </button>
@@ -43,7 +44,7 @@ const Menu = ({ showAll }: any) => {
               <div className="bg-secondary py-1">
                 <div className="px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
                   {/* TO DO: UPDATE LINK */}
-                  Order for Pickup. Order for delivery through <Link href="/" className="text-secondary-foreground">link.</Link>
+                  Order for Pickup. Order for delivery <Link href="/" className="text-secondary-foreground underline">here.</Link>
                 </div>
               </div>
             </div>
@@ -74,7 +75,7 @@ const Menu = ({ showAll }: any) => {
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`${selectedCategory === category.id && "font-semibold"}`}
+                      className={`cursor-pointer hover:text-primary ${selectedCategory === category.id && "font-semibold"}`}
                     >
                       {category.name}
                     </button>
@@ -84,7 +85,7 @@ const Menu = ({ showAll }: any) => {
               </div>
               <div className="bg-secondary py-1">
                 <div className="px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
-                  Order for Pickup. Order for delivery through <Link href="/" className="text-secondary-foreground">link.</Link>
+                  Order for Pickup. Order for delivery <Link href="/" className="text-secondary-foreground underline">here.</Link>
                 </div>
               </div>
             </div>

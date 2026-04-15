@@ -61,8 +61,7 @@ export function NavBar() {
             About
           </Link>
         </div>
-        <div className="flex items-center gap-x-[0.625rem] lg:gap-x-[1.25rem]">
-          <Button size="lg">Order Now</Button>
+        <div className="flex items-center">
           <button onClick={openCartModal} className="cursor-pointer">
             <CartIcon w={28} h={28}></CartIcon>
           </button>

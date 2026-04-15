@@ -231,7 +231,7 @@ export function CustomizeModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[70vw] md:h-[80vh]">
+            <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[80vw] md:h-[80vh]">
                 {/* Image on left only on desktop */}
                 <div className="hidden md:flex">
                     <div className="w-auto h-auto flex">
@@ -251,7 +251,7 @@ export function CustomizeModal({
                 <div className="w-full h-full flex flex-col justify-between">
                     <div className="flex">
                         {/* Image on left of text only on mobile view */}
-                        <div className="flex md:hidden">
+                        <div className="flex md:hidden pl-[1.25rem]">
                             {/* Image */}
                             {image===null || image==="" ? (
                                 <div></div>
@@ -259,11 +259,11 @@ export function CustomizeModal({
                                 <img
                                 src={image}
                                 alt='Image of Drink'
-                                className='size-full max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
+                                className='size-full max-h-[80vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
                                 />
                             )}
                         </div>
-                        <DialogHeader className="py-4 mx-[2.5rem] text-left">
+                        <DialogHeader className="py-4 ml-[1rem] mr-[2.5rem] text-left">
                             <DialogTitle className="!text-[1.5rem]">{name}</DialogTitle>
                             <DialogDescription className="flex flex-col -mt-2">
                                 <span className="!text-[1.25rem]">
@@ -294,9 +294,9 @@ export function CustomizeModal({
                             )}
                         </div>
                     </div>
-                    <DialogFooter className="pb-4 px-[2.5rem] h-[3.75rem]">
-                        <div className="flex justify-between w-full mt-4 items-center">
-                            <div className="flex gap-x-1 items-center">
+                    <DialogFooter className="py-2 px-[2.5rem] h-[3.75rem] flex items-center">
+                        <div className="flex justify-between w-full items-center">
+                            <div className="flex gap-x-2 items-center">
                                 <button onClick={handleMinus} className="cursor-pointer"><CircleMinus /></button>
                                 <h5>{quantity}</h5>
                                 <button onClick={handlePlus} className="cursor-pointer"><CirclePlus /></button>
