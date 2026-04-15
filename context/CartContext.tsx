@@ -10,13 +10,21 @@ interface CartContextType {
   clearCart: () => void;
 }
 
+const MAX_CART_ITEMS = 10;
+
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: any) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   function addToCart(item: CartItem) {
-    setCart((prev) => [...prev, item]);
+    setCart((prev) => {
+      if (prev.length >= MAX_CART_ITEMS) {
+        alert("Cart limit reached (10 items).");
+        return prev;
+      }
+      return [...prev, item];
+    });
   }
 
   function removeFromCart(id: string) {

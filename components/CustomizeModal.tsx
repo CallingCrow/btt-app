@@ -43,6 +43,7 @@ export function CustomizeModal({
   );
   const [quantity, setQuantity] = useState(1);
   const [finalPrice, setFinalPrice] = useState<number>(price || 0);
+  const [isValid, setIsValid] = useState(false);
 
   const { addToCart } = useCart();
 
@@ -158,7 +159,7 @@ export function CustomizeModal({
         const initialSelected: Record<string, any[]> = {};
         (defaults || []).forEach((d) => {
           const groupId = d.customization_options?.[0]?.group_id;
-          if (!groupId) return; // safety check
+          if (groupId == null) return; // safety check
 
           if (!initialSelected[groupId]) {
             initialSelected[groupId] = [];
@@ -187,28 +188,55 @@ export function CustomizeModal({
 
     Object.values(selectedOptions).forEach((group: any) => {
       group.forEach((opt: any) => {
-        if (
-          opt.isDefault &&
-          defaultsMap[opt.optionId]?.price_override !== null
-        ) {
-          total += defaultsMap[opt.optionId].price_override;
-        } else {
-          const option = customizations
-            .flatMap((g) => g.options)
-            .find((o) => o.id === opt.optionId);
+        const defaultData = defaultsMap[opt.optionId];
 
-          if (option) {
-            total += Number(option.price) || 0;
+        //if has a default
+        if (defaultData) {
+          const override = defaultData.price_override;
+
+          if (override !== null && override !== undefined) {
+            total += Number(override);
+          } else {
+            total += 0; //if no override, default to free
           }
+
+          return;
+        }
+
+        //no default
+        const option = customizations
+          .flatMap((g) => g.options)
+          .find((o) => o.id === opt.optionId);
+
+        if (option) {
+          total += Number(option.price) || 0;
         }
       });
     });
 
     setFinalPrice(total);
+  }, [selectedOptions, customizations, price]);
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedOptions({});
+      setDefaultsMap({});
+      setCustomizations([]);
+      setQuantity(1);
+      setFinalPrice(price || 0);
+    }
+  }, [open]);
+
+  //check if selections change
+  useEffect(() => {
+    const valid = isSelectionValid();
+    setIsValid(valid);
   }, [selectedOptions, customizations]);
 
   function handlePlus() {
-    setQuantity((a) => a + 1);
+    if (quantity < 10) {
+      setQuantity((a) => a + 1);
+    }
   }
   function handleMinus() {
     if (quantity > 1) {
@@ -218,6 +246,7 @@ export function CustomizeModal({
 
   function handleAddToCart() {
     const item = buildCartItem({
+      itemId: id,
       name,
       price,
       finalPrice,
@@ -229,78 +258,106 @@ export function CustomizeModal({
     addToCart(item);
   }
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[80vw] md:h-[80vh]">
-                {/* Image on left only on desktop */}
-                <div className="hidden md:flex">
-                    <div className="w-auto h-auto flex">
-                        {/* Image */}
-                        {image===null || image==="" ? (
-                            <div></div>
-                        ) : (
-                            <img
-                            src={image}
-                            alt='Image of Drink'
-                            className='size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
-                            />
-                        )}
-                    </div>
-                </div>
+  //ensure selections are within min_select and max_select
+  function isSelectionValid(): boolean {
+    if (!customizations.length) return false;
 
-                <div className="w-full h-full flex flex-col justify-between">
-                    <div className="flex">
-                        {/* Image on left of text only on mobile view */}
-                        <div className="flex md:hidden pl-[1.25rem]">
-                            {/* Image */}
-                            {image===null || image==="" ? (
-                                <div></div>
-                            ) : (
-                                <img
-                                src={image}
-                                alt='Image of Drink'
-                                className='size-full max-h-[80vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain'
-                                />
-                            )}
-                        </div>
-                        <DialogHeader className="py-4 ml-[1rem] mr-[2.5rem] text-left">
-                            <DialogTitle className="!text-[1.5rem]">{name}</DialogTitle>
-                            <DialogDescription className="flex flex-col -mt-2">
-                                <span className="!text-[1.25rem]">
-                                    {formatCurrency(finalPrice)}
-                                </span>
-                                <span className="text-muted-foreground !text-[0.875rem]">
-                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur, possimus, est accusantium ullam consectetur, architecto sint quod fuga autem dolores placeat. Hic illo, architecto nulla ipsa minima molestiae soluta iusto.
-                                </span>
-                            </DialogDescription>
-                        </DialogHeader>
-                    </div>
+    for (const group of customizations) {
+      const selected = selectedOptions[group.id] || [];
 
-                    <div className="bg-gray-100 px-[2.5rem] h-full overflow-y-auto">
-                        <div className="-mx-4 no-scrollbar max-h-[65vh] min-[32rem]:max-h-[62vh] md:max-h-[48vh] overflow-y-auto px-4 py-4">
-                            <span className="text-[1.25rem]">Customize your item</span>
-                            {loading ? (
-                                <p>Loading...</p>
-                            ) : (
-                                customizations.map(group => (
-                                    <CustomizeBlock
-                                        key={group.id}
-                                        group={group}
-                                        selectedOptions={selectedOptions}
-                                        setSelectedOptions={setSelectedOptions}
-                                        defaultsMap={defaultsMap}
-                                    />
-                                ))
-                            )}
-                        </div>
-                    </div>
-                    <DialogFooter className="py-2 px-[2.5rem] h-[3.75rem] flex items-center">
-                        <div className="flex justify-between w-full items-center">
-                            <div className="flex gap-x-2 items-center">
-                                <button onClick={handleMinus} className="cursor-pointer"><CircleMinus /></button>
-                                <h5>{quantity}</h5>
-                                <button onClick={handlePlus} className="cursor-pointer"><CirclePlus /></button>
-                            </div>
+      const count = selected.length;
+
+      // required minimum
+      if (count < group.min_select) return false;
+
+      // max constraint
+      if (count > group.max_select) return false;
+    }
+
+    return true;
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[80vw] md:h-[80vh]">
+        {/* Image on left only on desktop */}
+        <div className="hidden md:flex">
+          <div className="w-auto h-auto flex">
+            {/* Image */}
+            {image === null || image === "" ? (
+              <div></div>
+            ) : (
+              <img
+                src={image}
+                alt="Image of Drink"
+                className="size-full rounded-l-lg max-h-[30vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="w-full h-full flex flex-col justify-between">
+          <div className="flex">
+            {/* Image on left of text only on mobile view */}
+            <div className="flex md:hidden pl-[1.25rem]">
+              {/* Image */}
+              {image === null || image === "" ? (
+                <div></div>
+              ) : (
+                <img
+                  src={image}
+                  alt="Image of Drink"
+                  className="size-full max-h-[80vh] md:max-h-[100vh] md:w-auto md:h-[100%] object-contain"
+                />
+              )}
+            </div>
+            <DialogHeader className="py-4 ml-[1rem] mr-[2.5rem] text-left">
+              <DialogTitle className="!text-[1.5rem]">{name}</DialogTitle>
+              <DialogDescription className="flex flex-col -mt-2">
+                <span className="!text-[1.25rem]">
+                  {formatCurrency(finalPrice)}
+                </span>
+                <span className="text-muted-foreground !text-[0.875rem]">
+                  {descriptionL}
+                  {!isValid && (
+                    <p className="text-destructive mt-[0.5rem]">
+                      Please complete all required selections
+                    </p>
+                  )}
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="bg-gray-100 px-[2.5rem] h-full overflow-y-auto">
+            <div className="-mx-4 no-scrollbar max-h-[65vh] min-[32rem]:max-h-[62vh] md:max-h-[48vh] overflow-y-auto px-4 py-4">
+              <span className="text-[1.25rem]">Customize your item</span>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                customizations.map((group) => (
+                  <CustomizeBlock
+                    key={group.id}
+                    group={group}
+                    selectedOptions={selectedOptions}
+                    setSelectedOptions={setSelectedOptions}
+                    defaultsMap={defaultsMap}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+          <DialogFooter className="py-2 px-[2.5rem] h-[3.75rem] flex items-center">
+            <div className="flex justify-between w-full items-center">
+              <div className="flex gap-x-2 items-center">
+                <button onClick={handleMinus} className="cursor-pointer">
+                  <CircleMinus />
+                </button>
+                <h5>{quantity}</h5>
+                <button onClick={handlePlus} className="cursor-pointer">
+                  <CirclePlus />
+                </button>
+              </div>
 
               <DialogClose asChild>
                 <Button
@@ -308,6 +365,7 @@ export function CustomizeModal({
                   size="lg"
                   className="px-10 cursor-pointer"
                   onClick={handleAddToCart}
+                  disabled={!isValid}
                 >
                   Add to Cart
                 </Button>
@@ -405,34 +463,46 @@ const CustomizeBlock = ({
 
         const defaultData = defaultsMap[opt.id];
         let displayPrice = opt.price;
-        if (defaultData && defaultData.price_override !== null) {
-          displayPrice = defaultData.price_override;
+        if (defaultData) {
+          if (
+            defaultData.price_override !== null &&
+            defaultData.price_override !== undefined
+          ) {
+            displayPrice = defaultData.price_override;
+          } else {
+            displayPrice = 0;
+          }
         }
 
         const isSingle = group.max_select === 1;
         const isLocked =
           selected && defaultsMap[opt.id] && !defaultsMap[opt.id].is_removable;
 
-                return (
-                    <div key={key} className="mt-1 py-2 border-t-2">
-                        <label key={opt.id} className="flex flex-row justify-between items-center gap-2 cursor-pointer">
-                            <div className="flex flex-col">
-                                {opt.name} 
-                                <span className="text-muted-foreground">+{formatCurrency(displayPrice)}</span>
-                            </div>
-                            <div className="">
-                                <input
-                                    type={isSingle ? "radio" : "checkbox"}
-                                    checked={selected}
-                                    disabled={isLocked}
-                                    onChange={() => toggleOption(opt, group)}
-                                    className="accent-primary"
-                                />
-                            </div>
-                        </label>
-                    </div>
-                );
-            })}
-        </div>
-    );
+        return (
+          <div key={key} className="mt-1 py-2 border-t-2">
+            <label
+              key={opt.id}
+              className="flex flex-row justify-between items-center gap-2 cursor-pointer"
+            >
+              <div className="flex flex-col">
+                {opt.name}
+                <span className="text-muted-foreground">
+                  +{formatCurrency(displayPrice)}
+                </span>
+              </div>
+              <div className="">
+                <input
+                  type={isSingle ? "radio" : "checkbox"}
+                  checked={selected}
+                  disabled={isLocked}
+                  onChange={() => toggleOption(opt, group)}
+                  className="accent-primary hover:cursor-pointer"
+                />
+              </div>
+            </label>
+          </div>
+        );
+      })}
+    </div>
+  );
 };

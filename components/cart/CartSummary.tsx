@@ -49,7 +49,6 @@ export default function CartSummary() {
     }
 
     try {
-      const lineItems = buildCloverLineItems(cart);
       const phoneDigits = phone.replace(/\D/g, "");
 
       const res = await fetch("/api/create-checkout", {
@@ -58,8 +57,26 @@ export default function CartSummary() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          lineItems,
-          customer: { email, firstName, lastName, phone },
+          items: cart.map((item) => ({
+            itemId: item.itemId, // real menu item id
+            quantity: item.quantity,
+
+            // convert your frontend structure → backend format
+            selectedOptions: Object.fromEntries(
+              Object.entries(item.selectedOptions || {}).map(
+                ([groupId, options]) => [
+                  groupId,
+                  options.map((o: any) => o.optionId),
+                ],
+              ),
+            ),
+          })),
+          customer: {
+            email,
+            firstName,
+            lastName,
+            phone: phone.replace(/\D/g, ""),
+          },
         }),
       });
 

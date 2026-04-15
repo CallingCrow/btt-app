@@ -41,7 +41,7 @@ export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
                   <p>x{item.quantity}</p>
                   <p className="font-semibold">{item.name}</p>
                 </div>
-                <p>{formatCurrency(item.finalPrice)}</p>
+                <p>{formatCurrency(item.finalPrice * item.quantity)}</p>
               </div>
 
               <p className="text-[0.875rem] text-gray-500">

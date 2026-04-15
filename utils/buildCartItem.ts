@@ -1,15 +1,17 @@
 import { CartItem } from "@/types/cart";
 
 interface BuildCartItemProps {
-  name: string;
-  price: number;
-  finalPrice: number;
-  quantity: number;
-  selectedOptions: Record<string, any[]>;
-  customizations: any[];
+    itemId: string;
+    name: string;
+    price: number;
+    finalPrice: number;
+    quantity: number;
+    selectedOptions: Record<string, any[]>;
+    customizations: any[];
 }
 
 export default function buildCartItem({
+    itemId,
   name,
   price,
   finalPrice,
@@ -36,10 +38,12 @@ export default function buildCartItem({
 
     return {
         id: crypto.randomUUID(),
+        itemId,
         name,
         basePrice: Number(price) || 0,
         finalPrice,
         quantity,
-        customizations: customizationsList
+        selectedOptions,
+        customizations: customizationsList //UI display
     };
 }

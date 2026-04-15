@@ -1,11 +1,10 @@
 export interface CartItem {
-  id: string;
+  id: string; // cart item id
+  itemId: string; // menu item id
   name: string;
   basePrice: number;
-  finalPrice: number;
+  finalPrice: number; // UI only
   quantity: number;
-  customizations: {
-    name: string;
-    price: number;
-  }[];
+  selectedOptions: Record<string, { optionId: number; isDefault?: boolean }[]>;
+  customizations: { name: string; price: number }[]; // UI only
 }
