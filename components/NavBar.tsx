@@ -34,7 +34,7 @@ export function NavBar() {
       {/* Mobile Layout */}
       <div className="md:hidden flex justify-between items-center mx-[1.25rem] h-[3rem]">
         <Brand />
-        <div className="flex gap-x-[0.5rem] items-center">
+        <div className="flex gap-x-[1rem] items-center">
           <button onClick={openCartModal} className="cursor-pointer">
             <CartIcon w={28} h={28}></CartIcon>
           </button>
@@ -45,9 +45,9 @@ export function NavBar() {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden md:mx-[2.5rem] lg:mx-[6rem] md:flex flex justify-between h-[3.5rem] items-center">
+      <div className="hidden md:mx-[2.5rem] lg:mx-[6rem] md:grid grid-cols-3">
         <Brand />
-        <div className="flex gap-x-[1.25rem] lg:gap-x-[1.875rem] text-[1.25rem]">
+        <div className="flex justify-center items-center gap-x-[1.25rem] lg:gap-x-[1.875rem] text-[1.25rem]">
           <Link href="/" className="hover:text-primary">
             Home
           </Link>
@@ -61,7 +61,7 @@ export function NavBar() {
             About
           </Link>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center justify-end">
           <button onClick={openCartModal} className="cursor-pointer">
             <CartIcon w={28} h={28}></CartIcon>
           </button>
@@ -91,9 +91,9 @@ export function MenuModal({ open, onOpenChange }: MenuModalProps) {
       <DialogContent className="w-full h-full rounded-none">
         <div>
           <DialogHeader className="py-4 p-[1.25rem] items-start">
-            <DialogTitle>Bubble Tea Time</DialogTitle>
+            <DialogTitle></DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-y-[2.5rem] p-[1.25rem] mt-[1.25rem]">
+          <div className="flex flex-col items-center gap-y-[2.5rem] p-[1.25rem] mt-[2rem]">
             <Link href="/">
               <h4>Home</h4>
             </Link>
