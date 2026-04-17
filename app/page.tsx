@@ -1,15 +1,17 @@
-'use client'
+"use client";
 
 import { NavBar } from "@/components/NavBar";
 import { InfoSection } from "@/components/InfoSection";
 import Footer from "@/components/Footer";
 import Menu from "@/components/Menu";
 import { Button } from "@/components/ui/button";
-import heroImg from "@/public/Hero.jpg";
+import backupImg from "@/public/Backup.jpg";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase-client";
 import Link from "next/link";
+import { heroImage } from "@/types/images";
+import HeroImage from "@/components/HeroImage";
 
 interface infoSection {
   id: number;
@@ -20,25 +22,45 @@ interface infoSection {
 }
 
 export default function Home() {
-    const [infoSections, setNewInfoSections] = useState<infoSection[]>([]);
-  
-    const fetchInfoSections = async () => {
-        const { data, error } = await supabase
-        .from("info")
-        .select("*")
-        .eq('onHome', true)
-  
-        if (error) {
-        console.error("Error fetching info section on home page", error.message);
-        return;
-        }
-  
-        setNewInfoSections(data);
-    };
-  
-    useEffect(() => {
-        fetchInfoSections();
-    }, []);
+  const [infoSections, setNewInfoSections] = useState<infoSection[]>([]);
+  const [heroImage, setHeroImage] = useState<heroImage | null>(null);
+
+  const fetchInfoSections = async () => {
+    const { data, error } = await supabase
+      .from("info")
+      .select("*")
+      .eq("onHome", true);
+
+    if (error) {
+      console.error("Error fetching info section on home page", error.message);
+      return;
+    }
+
+    setNewInfoSections(data);
+  };
+
+  useEffect(() => {
+    fetchInfoSections();
+  }, []);
+
+  const fetchHeroImage = async () => {
+    const { data, error } = await supabase
+      .from("hero_images")
+      .select("*")
+      .eq("page", "home")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching hero image on home page", error.message);
+      return;
+    }
+
+    setHeroImage(data);
+  };
+
+  useEffect(() => {
+    fetchHeroImage();
+  }, []);
 
   return (
     <div>
@@ -46,16 +68,9 @@ export default function Home() {
         <NavBar />
       </header>
       <main>
-        <section className="relative z-10 w-full min-h-[10vh] sm:min-h-[50vh] flex items-center py-2 sm:py-12 flex justify-center">
-          <Image
-            src={heroImg}
-            alt="ALT TO DO"
-            fill
-            priority
-            className="object-cover"
-          />
+        <section className="relative z-10 w-full h-[10vh] sm:h-[50vh] flex items-center py-2 sm:py-12 flex justify-center">
+          <HeroImage page="home"></HeroImage>
           <div className="absolute inset-0 max-md:bg-black/40" />
-
           <div className="relative z-10 mx-[6rem] w-full py-[1rem] sm:py-0">
             <div className="items-center">
               <div className="text-center flex-col justify-center md:justify-start md:text-left space-y-3">
@@ -67,8 +82,20 @@ export default function Home() {
                   freshest tasting drinks
                 </p>
                 <div className="flex justify-center md:justify-start gap-4">
-                  <Link href="/menu"><Button variant="default" size="xl" className="cursor-pointer">Order Pickup</Button></Link>
-                  <Button variant="secondary" size="xl" className="cursor-pointer">
+                  <Link href="/menu">
+                    <Button
+                      variant="default"
+                      size="xl"
+                      className="cursor-pointer"
+                    >
+                      Order Pickup
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="secondary"
+                    size="xl"
+                    className="cursor-pointer"
+                  >
                     Order Delivery
                   </Button>
                 </div>

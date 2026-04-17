@@ -18,17 +18,22 @@ interface MenuSectionProps {
   type: string;
   items: MenuItem[];
   showHeader: boolean;
-  isAdmin: boolean
+  isAdmin: boolean;
 }
 
-const MenuSection = ({type, items, showHeader, isAdmin}: MenuSectionProps) => {
+const MenuSection = ({
+  type,
+  items,
+  showHeader,
+  isAdmin,
+}: MenuSectionProps) => {
   return (
     <div className="mx-[1.25rem] md:mx-[2.5rem] lg:mx-[6rem] mb-[2.5rem]">
       {showHeader && <h6 className="mb-[1.25rem] font-semibold">{type}</h6>}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-[1.25rem] gap-x-[2.5rem]">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-[1.25rem] gap-x-[1.75rem]">
         {items?.map((item, index) => (
-          <MenuCard 
+          <MenuCard
             key={index}
             id={item.id}
             name={item.name}
@@ -42,7 +47,7 @@ const MenuSection = ({type, items, showHeader, isAdmin}: MenuSectionProps) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default MenuSection;

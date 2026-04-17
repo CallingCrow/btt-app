@@ -1,13 +1,12 @@
-'use client'
+"use client";
 
 import React from "react";
 import { NavBar } from "@/components/NavBar";
 import { InfoSection } from "@/components/InfoSection";
 import Footer from "@/components/Footer";
-import heroImg from "@/public/Hero.jpg";
+import HeroImage from "@/components/HeroImage";
 import { supabase } from "../supabase-client";
 import { useEffect, useState } from "react";
-
 
 interface infoSection {
   id: number;
@@ -21,21 +20,24 @@ const AboutPage = () => {
   const [infoSections, setNewInfoSections] = useState<infoSection[]>([]);
 
   const fetchInfoSections = async () => {
-      const { data, error } = await supabase
+    const { data, error } = await supabase
       .from("info")
       .select("*")
-      .eq('onHome', false)
+      .eq("onHome", false);
 
-      if (error) {
-      console.error("Error fetching info section on about page:", error.message);
+    if (error) {
+      console.error(
+        "Error fetching info section on about page:",
+        error.message,
+      );
       return;
-      }
+    }
 
-      setNewInfoSections(data);
+    setNewInfoSections(data);
   };
 
   useEffect(() => {
-      fetchInfoSections();
+    fetchInfoSections();
   }, []);
 
   return (
@@ -44,7 +46,9 @@ const AboutPage = () => {
         <NavBar />
       </header>
       <main>
-        <div>Top image</div>
+        <section className="relative z-10 w-full h-[10vh] sm:h-[40vh] flex items-center py-2 sm:py-12 ">
+          <HeroImage page="about"></HeroImage>
+        </section>
         <div className="space-y-[2.5rem]">
           {infoSections.map((infoSection, index) => (
             <InfoSection
