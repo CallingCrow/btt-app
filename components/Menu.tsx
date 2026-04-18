@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React from "react";
 import { useState, useEffect } from "react";
@@ -12,11 +12,13 @@ const Menu = ({ showAll }: any) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   function scrollTo(sectionId: string) {
-    document.getElementById(sectionId)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    document
+      .getElementById(sectionId)
+      ?.scrollIntoView({ block: "center", behavior: "smooth" });
   }
 
   useEffect(() => {
-    if (categories.length && selectedCategory===null) {
+    if (categories.length && selectedCategory === null) {
       setSelectedCategory(categories[0].id);
     }
   }, [categories]);
@@ -28,7 +30,7 @@ const Menu = ({ showAll }: any) => {
           <div className="flex flex-col min-h-screen">
             <div className="mb-[2.5rem] sticky z-50 top-[3rem]">
               <div className="bg-white flex justify-between text-nowrap overflow-x-auto border-b-2 border-solid py-[0.625rem] px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
-                <h6 className="flex gap-x-[0.5rem] sm:gap-x-[1.5rem]">
+                <h6 className="flex gap-x-[1rem] sm:gap-x-[1.5rem]">
                   {categories.map((category) => (
                     <button
                       key={category.id}
@@ -44,7 +46,13 @@ const Menu = ({ showAll }: any) => {
               <div className="bg-secondary py-1">
                 <div className="px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
                   {/* TO DO: UPDATE LINK */}
-                  Order for Pickup. Order for delivery <Link href="/" className="text-secondary-foreground underline">here.</Link>
+                  Order for Pickup. Order for delivery{" "}
+                  <Link
+                    href="/"
+                    className="text-secondary-foreground underline"
+                  >
+                    here.
+                  </Link>
                 </div>
               </div>
             </div>
@@ -54,15 +62,15 @@ const Menu = ({ showAll }: any) => {
                 if (!items.length) return null;
 
                 return (
-                <div id={`category-${category.id}`} key={category.id}>
-                  <MenuSection
-                    type={category.name}
-                    items={items}
-                    showHeader={true}
-                    isAdmin={false}
-                  />
-                </div>
-                )
+                  <div id={`category-${category.id}`} key={category.id}>
+                    <MenuSection
+                      type={category.name}
+                      items={items}
+                      showHeader={true}
+                      isAdmin={false}
+                    />
+                  </div>
+                );
               })}
             </div>
           </div>
@@ -85,7 +93,13 @@ const Menu = ({ showAll }: any) => {
               </div>
               <div className="bg-secondary py-1">
                 <div className="px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
-                  Order for Pickup. Order for delivery <Link href="/" className="text-secondary-foreground underline">here.</Link>
+                  Order for Pickup. Order for delivery{" "}
+                  <Link
+                    href="/"
+                    className="text-secondary-foreground underline"
+                  >
+                    here.
+                  </Link>
                 </div>
               </div>
             </div>
@@ -98,7 +112,6 @@ const Menu = ({ showAll }: any) => {
               isAdmin={false}
             />
           </div>
-
         )}
       </div>
     </div>

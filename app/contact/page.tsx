@@ -40,13 +40,17 @@ const ContactPage = () => {
         <NavBar />
       </header>
       <main>
-        <section className="relative z-10 w-full min-h-[10vh] sm:min-h-[50vh] flex items-center py-2 sm:py-12 ">
+        <section className="relative z-10 w-full min-h-[25vh] sm:min-h-[35vh] flex items-center py-2 sm:py-12 ">
           <HeroImage page="contact"></HeroImage>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative z-10 w-full text-white">
+            <h1 className="text-white font-bold text-center">Contact</h1>
+          </div>
         </section>
-        <section className="space-y-[2.5rem] bg-secondary h-[56rem] sm:h-[28rem] md:h-[32rem]">
+        <section className="mt-[2.5rem] space-y-[2.5rem] bg-secondary h-[56rem] sm:h-[28rem] md:h-[32rem]">
           <div className="pt-[3.75rem] px-[1.25rem] md:px-[2.5rem] lg:px-[6rem] grid grid-rows-2 sm:grid-cols-2 gap-x-[2.5rem] sm:gap-y-[3rem]">
             <div>
-              <h4 className="pb-[1.25rem]">Get in Touch</h4>
+              <h4 className="pb-[1.25rem] font-bold">Get in Touch</h4>
               {contactInfoList.map((contactInfo, key) => (
                 <div key={key} className="py-[0.625rem] max-w-[18.75rem]">
                   <h6 className="">{contactInfo.name}:</h6>

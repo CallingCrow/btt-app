@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React from "react";
 import Link from "next/link";
@@ -30,7 +30,7 @@ const Footer = () => {
     const { data, error } = await supabase
       .from("hours")
       .select("*")
-      .order("id")
+      .order("id");
 
     if (error) {
       console.error("Error fetching hours", error.message);
@@ -45,9 +45,7 @@ const Footer = () => {
   }, []);
 
   const fetchcontactInfoList = async () => {
-    const { data, error } = await supabase
-      .from("contact_info")
-      .select("*")
+    const { data, error } = await supabase.from("contact_info").select("*");
 
     if (error) {
       console.error("Error fetching contact info:", error.message);
@@ -60,7 +58,6 @@ const Footer = () => {
   useEffect(() => {
     fetchcontactInfoList();
   }, []);
-
 
   return (
     <div className="bg-accent-foreground text-accent mt-[2.5rem]">
@@ -90,9 +87,15 @@ const Footer = () => {
           <h4>Hours</h4>
           <div className="text-center text-[1rem] mt-[1.875rem] space-y-[1.25rem] flex flex-col mx-[6.25rem] sm:mx-[11.25rem]">
             {hours.map((day, key) => (
-              <div key={key} className='flex justify-between'>
+              <div key={key} className="flex justify-between">
                 <p>{day.day}:</p>
-                {day.isClosed ? <p>Closed</p> : <p>{day.start_time}-{day.end_time}</p>}
+                {day.isClosed ? (
+                  <p>Closed</p>
+                ) : (
+                  <p>
+                    {day.start_time}-{day.end_time}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -100,7 +103,9 @@ const Footer = () => {
         <div className="items-center text-center space-y-[2.5rem]">
           <div>
             <h4>Bubble Tea Time</h4>
-            <p className="!text-[0.875rem]">Best quality ingredients, made fresh</p>
+            <p className="!text-[0.875rem]">
+              Best quality ingredients, made fresh
+            </p>
           </div>
           {/* Find some way to prevent bot spam? */}
           {/* TO DO Make this do something!! */}
@@ -115,6 +120,12 @@ const Footer = () => {
               Subscribe
             </Button>
           </form>
+        </div>
+        <div className="block border-t-2 border-solid border-accent">
+          <div className="flex justify-between mx-[1.25rem] py-[0.625rem]">
+            <p>© 2026 BubbleTeaTime</p>
+            {/* <Link href="/admin">Admin Login</Link> */}
+          </div>
         </div>
       </div>
 
@@ -145,9 +156,11 @@ const Footer = () => {
           <div className="text-center">
             <h4>Contact</h4>
             <div className="text-[1rem] mt-[1.875rem] space-y-[1.25rem] flex flex-col items-center">
-            {contactInfoList.map((contactInfo, key) => (
-              <p key={key} className="w-[15.625rem]">{contactInfo.info}</p>
-            ))}
+              {contactInfoList.map((contactInfo, key) => (
+                <p key={key} className="w-[15.625rem]">
+                  {contactInfo.info}
+                </p>
+              ))}
               <div className="flex justify-center space-x-[1rem] items-center">
                 <div className="flex justify-start space-x-[1rem]">
                   <Button variant="default" size="icon">
@@ -165,19 +178,25 @@ const Footer = () => {
           <div className="text-center flex-col justify-center">
             <h4>Hours</h4>
             <div className="text-center text-[1rem] mt-[1.875rem] space-y-[1.25rem] flex flex-col mx-[0.625rem] lg:mx-[1.25rem] xl:mx-[3.125rem]">
-            {hours.map((day, key) => (
-              <div key={key} className='flex justify-between'>
-                <p className=''>{day.day}</p>
-                {day.isClosed ? <p>Closed</p> : <p>{day.start_time}-{day.end_time}</p>}
-              </div>
-            ))}
+              {hours.map((day, key) => (
+                <div key={key} className="flex justify-between">
+                  <p className="">{day.day}</p>
+                  {day.isClosed ? (
+                    <p>Closed</p>
+                  ) : (
+                    <p>
+                      {day.start_time}-{day.end_time}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
-        <div className="hidden lg:block lg:border-t-2 lg:border-solid lg:border-accent">
+        <div className="block border-t-2 border-solid border-accent">
           <div className="flex justify-between mx-[1.25rem] md:mx-[6rem] py-[0.625rem]">
-            <p>@copyright</p>
-            <Link href="/admin">Admin Login</Link>
+            <p>© 2026 BubbleTeaTime</p>
+            {/* <Link href="/admin">Admin Login</Link> */}
           </div>
         </div>
       </div>

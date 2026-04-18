@@ -46,10 +46,16 @@ const AboutPage = () => {
         <NavBar />
       </header>
       <main>
-        <section className="relative z-10 w-full h-[10vh] sm:h-[40vh] flex items-center py-2 sm:py-12 ">
+        <section className="relative z-10 w-full h-[30vh] sm:h-[40vh] lg:h-[50vh] flex items-center py-2 sm:py-12 ">
           <HeroImage page="about"></HeroImage>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative z-10 w-full text-white">
+            <h1 className="text-white font-bold pl-[6rem] sm:pl-[10rem]">
+              About
+            </h1>
+          </div>
         </section>
-        <div className="space-y-[2.5rem]">
+        <div className="space-y-[2.5rem] mt-[2.5rem]">
           {infoSections.map((infoSection, index) => (
             <InfoSection
               key={index}

@@ -68,24 +68,27 @@ export default function Home() {
         <NavBar />
       </header>
       <main>
-        <section className="relative z-10 w-full h-[10vh] sm:h-[50vh] flex items-center py-2 sm:py-12 flex justify-center">
+        <section className="relative z-10 w-full h-[35vh] lg:h-[50vh] flex items-center py-2 sm:py-12 flex justify-center">
           <HeroImage page="home"></HeroImage>
-          <div className="absolute inset-0 max-md:bg-black/40" />
+          <div className="absolute inset-0 bg-black/60 lg:bg-black/50" />
           <div className="relative z-10 mx-[6rem] w-full py-[1rem] sm:py-0">
             <div className="items-center">
               <div className="text-center flex-col justify-center md:justify-start md:text-left space-y-3">
-                <h1 className="text-white md:text-foreground font-bold leading-tight">
+                <h1 className="text-white font-bold leading-tight">
                   Best quality ingredients, <br></br> made fresh
                 </h1>
-                <p className="text-white md:text-foreground text-[1.25rem] text-wrap">
-                  Bubble Tea Time is committed to providing its customers the
-                  freshest tasting drinks
-                </p>
+                <div className="max=w">
+                  <p className="text-white text-[1.25rem] text-wrap">
+                    Bubble Tea Time is committed to providing{" "}
+                    <br className="hidden md:block"></br> its customers the
+                    freshest tasting drinks
+                  </p>
+                </div>
                 <div className="flex justify-center md:justify-start gap-4">
                   <Link href="/menu">
                     <Button
                       variant="default"
-                      size="xl"
+                      size="lg"
                       className="cursor-pointer"
                     >
                       Order Pickup
@@ -93,7 +96,7 @@ export default function Home() {
                   </Link>
                   <Button
                     variant="secondary"
-                    size="xl"
+                    size="lg"
                     className="cursor-pointer"
                   >
                     Order Delivery

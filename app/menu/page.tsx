@@ -13,8 +13,12 @@ const MenuPage = () => {
       </header>
       <main>
         <div>
-          <section className="relative z-10 w-full h-[10vh] sm:h-[40vh] flex items-center py-2 sm:py-12 ">
+          <section className="relative z-10 w-full h-[30vh] lg:h-[40vh] flex items-center py-2 sm:py-12 ">
             <HeroImage page="menu"></HeroImage>
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="relative z-10 w-full text-white">
+              <h1 className="text-white font-bold text-center">Menu</h1>
+            </div>
           </section>
           <section className="">
             <Menu showAll={true} />
