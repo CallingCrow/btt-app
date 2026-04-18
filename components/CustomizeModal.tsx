@@ -317,12 +317,12 @@ export function CustomizeModal({
                 <span className="!text-[1.25rem]">
                   {formatCurrency(finalPrice)}
                 </span>
-                <span className="text-muted-foreground !text-[0.875rem]">
+                <span className="text-muted-foreground !text-[0.875rem] flex flex-col">
                   {descriptionL}
                   {!isValid && (
-                    <p className="text-destructive mt-[0.5rem]">
+                    <span className="text-destructive mt-[0.5rem]">
                       Please complete all required selections
-                    </p>
+                    </span>
                   )}
                 </span>
               </DialogDescription>
