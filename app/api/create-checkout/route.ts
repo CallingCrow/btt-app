@@ -1,12 +1,40 @@
 import { supabase } from "@/app/supabase-client";
 import { createCloverCheckout } from "@/lib/clover";
+import { validateCustomer } from "@/lib/validateCustomer";
+import { validateCart } from "@/lib/validateCart";
 
 const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_CART_ITEMS = 10;
+const TAX_RATE = 0.101; // 10.1%
+
+function uniqueCustomizations(
+  selectedOptions: Record<string, number[]>,
+  optionMap: Record<number, any>
+) {
+  const result: any[] = [];
+
+  for (const groupId in selectedOptions) {
+    for (const optionId of selectedOptions[groupId]) {
+      const option = optionMap[optionId];
+
+      if (option) {
+        result.push({
+          id: option.id,
+          name: option.name,
+          price: option.price,
+        });
+      }
+    }
+  }
+
+  return result;
+}
 
 export async function POST(req: Request) {
   try {
     const { items, customer } = await req.json();
+    validateCustomer(customer || {});
+    validateCart(items);
 
     if (!Array.isArray(items) || items.length === 0) {
       throw new Error("Cart is empty");
@@ -76,7 +104,7 @@ export async function POST(req: Request) {
       // fetch options ONLY for relevant groups
       const { data: optionsData } = await supabase
         .from("customization_options")
-        .select("id, price, group_id")
+        .select("id, name, price, group_id")
         .in("group_id", groupIds);
 
       const options = optionsData || [];
@@ -150,13 +178,58 @@ export async function POST(req: Request) {
       const finalItemTotal = total * quantity;
 
       lineItems.push({
+        itemId,
+
         name: menuItem.name,
+
         price: finalItemTotal,
-        quantity: 1,
+
+        quantity,
+
+        selectedOptions,
+
+        customizations: uniqueCustomizations(selectedOptions, optionMap),
       });
     }
 
-    const session = await createCloverCheckout(lineItems, customer);
+    // Calculate order totals
+    const subtotal =
+      lineItems.reduce(
+        (sum, i) => sum + i.price,
+        0
+      );
+
+    const tax =
+      Math.round(subtotal * TAX_RATE);
+
+    const total =
+      subtotal + tax;
+
+    // send cart to orders table
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        status: "pending",
+
+        subtotal,
+        tax,
+        total,
+
+        customer_name: customer?.name || null,
+        customer_email: customer?.email || null,
+        customer_phone: customer?.phone || null,
+
+        order_items: lineItems,
+      })
+      .select()
+      .single();
+
+    if (error || !order) {
+      throw new Error("Failed to create order");
+    }
+    const orderId = order.id;
+
+    const session = await createCloverCheckout(lineItems, orderId, tax);
 
     return new Response(JSON.stringify(session), { status: 200 });
   } catch (err: any) {

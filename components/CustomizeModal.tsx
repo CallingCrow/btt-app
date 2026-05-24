@@ -299,7 +299,7 @@ export function CustomizeModal({
         <div className="w-full h-full flex flex-col justify-between">
           <div className="flex">
             {/* Image on left of text only on mobile view */}
-            <div className="flex md:hidden pl-[1.25rem]">
+            <div className="flex md:hidden pl-[1.25rem] max-h-[20vh] max-w-[25vw]">
               {/* Image */}
               {image === null || image === "" ? (
                 <div></div>
@@ -330,7 +330,7 @@ export function CustomizeModal({
           </div>
 
           <div className="bg-gray-100 px-[2.5rem] h-full overflow-y-auto">
-            <div className="-mx-4 no-scrollbar max-h-[65vh] min-[32rem]:max-h-[62vh] md:max-h-[48vh] overflow-y-auto px-4 py-4">
+            <div className="-mx-4 no-scrollbar overflow-y-auto px-4 py-4">
               <span className="text-[1.25rem]">Customize your item</span>
               {loading ? (
                 <p>Loading...</p>

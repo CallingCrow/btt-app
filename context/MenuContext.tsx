@@ -74,7 +74,7 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
     const { data, error } = await supabase
       .from("menu_categories")
       .select("*")
-      .order("id");
+      .order("display_order");
 
     if (error) {
       console.error(error);

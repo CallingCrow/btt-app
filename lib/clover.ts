@@ -1,4 +1,3 @@
-// lib/clover.ts
 const CLOVER_BASE =
   process.env.CLOVER_ENV === "production"
     ? "https://api.clover.com"
@@ -10,7 +9,8 @@ const CLOVER_BASE =
  */
 export async function createCloverCheckout(
   cartItems: any[],
-  customer: { email: string; firstName: string; lastName: string; phone: string }
+  orderId: string,
+  tax: number
 ) {
   const res = await fetch(`${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`, {
     method: "POST",
@@ -23,16 +23,14 @@ export async function createCloverCheckout(
       shoppingCart: {
         lineItems: cartItems.map((item) => ({
           name: item.name,
-          price: Math.round(item.price), // in cents
+
+          price: Math.round(item.price),
+
           unitQty: item.unitQty || 1,
         })),
       },
-      customer: {
-        email: customer.email,
-        firstName: customer.firstName,
-        lastName: customer.lastName,
-        phoneNumber: customer.phone,
-      },
+      taxAmount: tax,
+      externalReferenceId: orderId,
     }),
   });
 
