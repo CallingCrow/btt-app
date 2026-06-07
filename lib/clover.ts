@@ -3,38 +3,47 @@ const CLOVER_BASE =
     ? "https://api.clover.com"
     : "https://sandbox.dev.clover.com";
 
-/**
- * Create a Clover Hosted Checkout session
- * @param cartItems Array of line items [{name, price, unitQty}]
- */
+
+// FOR DEBUG
 export async function createCloverCheckout(
   cartItems: any[],
   orderId: string,
   tax: number
 ) {
-  const res = await fetch(`${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.CLOVER_API_KEY}`, // private token
-      "X-Clover-Merchant-ID": process.env.CLOVER_MERCHANT_ID!,
-      "Content-Type": "application/json",
+  const payload = {
+    //TEST
+    customer: {},
+    shoppingCart: {
+      lineItems: cartItems.map((item) => ({
+        name: item.name,
+        price: Math.round(item.price),
+        unitQty: item.quantity,
+      })),
     },
-    body: JSON.stringify({
-      shoppingCart: {
-        lineItems: cartItems.map((item) => ({
-          name: item.name,
+    //taxAmount: tax,
+    externalReferenceId: orderId,
+  };
 
-          price: Math.round(item.price),
+  console.log(
+    "CLOVER PAYLOAD:",
+    JSON.stringify(payload, null, 2)
+  );
 
-          unitQty: item.unitQty || 1,
-        })),
+  const res = await fetch(
+    `${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.CLOVER_API_KEY}`,
+        "X-Clover-Merchant-ID": process.env.CLOVER_MERCHANT_ID!,
+        "Content-Type": "application/json",
       },
-      taxAmount: tax,
-      externalReferenceId: orderId,
-    }),
-  });
+      body: JSON.stringify(payload),
+    }
+  );
 
   const text = await res.text();
+
   console.log("Clover status:", res.status);
   console.log("Clover raw body:", text);
 
@@ -42,5 +51,52 @@ export async function createCloverCheckout(
     throw new Error(`Clover error: ${text}`);
   }
 
-  return JSON.parse(text); // returns { href: "https://checkout.clover.com/..." }
+  return JSON.parse(text);
 }
+
+// END FOR DEBUG
+
+
+
+
+// /**
+//  * Create a Clover Hosted Checkout session
+//  * @param cartItems Array of line items [{name, price, unitQty}]
+//  */
+// export async function createCloverCheckout(
+//   cartItems: any[],
+//   orderId: string,
+//   tax: number
+// ) {
+//   const res = await fetch(`${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`, {
+//     method: "POST",
+//     headers: {
+//       Authorization: `Bearer ${process.env.CLOVER_API_KEY}`, // private token
+//       "X-Clover-Merchant-ID": process.env.CLOVER_MERCHANT_ID!,
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({
+//       shoppingCart: {
+//         lineItems: cartItems.map((item) => ({
+//           name: item.name,
+
+//           price: Math.round(item.price),
+
+//           unitQty: item.quantity,
+//         })),
+//       },
+//       taxAmount: tax,
+//       externalReferenceId: orderId,
+//     }),
+//   });
+
+//   const text = await res.text();
+//   console.log("Clover status:", res.status);
+//   console.log("Clover raw body:", text);
+
+//   if (!res.ok) {
+//     throw new Error(`Clover error: ${text}`);
+//   }
+
+//   return JSON.parse(text); // returns { href: "https://checkout.clover.com/..." }
+// }

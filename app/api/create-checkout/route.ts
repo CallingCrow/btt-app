@@ -1,6 +1,6 @@
-import { supabase } from "@/app/supabase-client";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createCloverCheckout } from "@/lib/clover";
-import { validateCustomer } from "@/lib/validateCustomer";
+//import { validateCustomer } from "@/lib/validateCustomer";
 import { validateCart } from "@/lib/validateCart";
 
 const MAX_QUANTITY_PER_ITEM = 10;
@@ -32,8 +32,8 @@ function uniqueCustomizations(
 
 export async function POST(req: Request) {
   try {
-    const { items, customer } = await req.json();
-    validateCustomer(customer || {});
+    const { items } = await req.json();
+    //validateCustomer(customer || {});
     validateCart(items);
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       }
 
       // fetch menu item
-      const { data: menuItem } = await supabase
+      const { data: menuItem } = await supabaseAdmin
         .from("menu")
         .select("id, name, price, category_id")
         .eq("id", itemId)
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       let total = Number(menuItem.price);
 
       // fetch groups for category
-      const { data: categoryGroups } = await supabase
+      const { data: categoryGroups } = await supabaseAdmin
         .from("category_customization_groups")
         .select(`
           group_id (
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       const groupIds = groups.map((g: any) => g.id);
 
       // fetch options ONLY for relevant groups
-      const { data: optionsData } = await supabase
+      const { data: optionsData } = await supabaseAdmin
         .from("customization_options")
         .select("id, name, price, group_id")
         .in("group_id", groupIds);
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
       });
 
       // fetch defaults
-      const { data: defaultsData } = await supabase
+      const { data: defaultsData } = await supabaseAdmin
         .from("customization_defaults")
         .select("option_id, price_override")
         .eq("item_id", itemId);
@@ -175,14 +175,14 @@ export async function POST(req: Request) {
         }
       }
 
-      const finalItemTotal = total * quantity;
+      const unitPrice = total;
 
       lineItems.push({
         itemId,
 
         name: menuItem.name,
 
-        price: finalItemTotal,
+        price: unitPrice,
 
         quantity,
 
@@ -195,7 +195,7 @@ export async function POST(req: Request) {
     // Calculate order totals
     const subtotal =
       lineItems.reduce(
-        (sum, i) => sum + i.price,
+        (sum, i) => sum + (i.price * i.quantity),
         0
       );
 
@@ -206,7 +206,7 @@ export async function POST(req: Request) {
       subtotal + tax;
 
     // send cart to orders table
-    const { data: order, error } = await supabase
+    const { data: order, error } = await supabaseAdmin
       .from("orders")
       .insert({
         status: "pending",
@@ -215,17 +215,19 @@ export async function POST(req: Request) {
         tax,
         total,
 
-        customer_name: customer?.name || null,
-        customer_email: customer?.email || null,
-        customer_phone: customer?.phone || null,
-
         order_items: lineItems,
       })
       .select()
       .single();
 
-    if (error || !order) {
-      throw new Error("Failed to create order");
+    if (error) {
+      console.error("Supabase order insert error:", error);
+
+      throw new Error(error.message);
+    }
+
+    if (!order) {
+      throw new Error("Order was not returned");
     }
     const orderId = order.id;
 

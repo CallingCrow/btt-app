@@ -9,15 +9,15 @@ export async function GET(req: Request) {
 
     // Protect route
 
-    const isVercelCron =
-        req.headers.get("x-vercel-cron");
+    // const isVercelCron =
+    //     req.headers.get("x-vercel-cron");
 
-    if (!isVercelCron) {
-        return new Response(
-            "Unauthorized",
-            { status: 401 }
-        );
-    }
+    // if (!isVercelCron) {
+    //     return new Response(
+    //         "Unauthorized",
+    //         { status: 401 }
+    //     );
+    // }
 
     // Fetch pending jobs
 

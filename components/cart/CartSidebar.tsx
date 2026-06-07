@@ -24,7 +24,7 @@ export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
   return (
     <div className="">
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-screen md:w-auto max-h-screen">
+        <SheetContent className="w-screen md:w-[24rem] max-h-screen">
           <SheetHeader className="pt-2 border-b-2">
             <div className="flex items-center gap-4">
               <CartIcon w={25} h={25}></CartIcon>

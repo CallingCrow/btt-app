@@ -7,7 +7,7 @@ const Brand = () => {
   const logoUrl = data.publicUrl;
 
   return (
-    <div className="flex justify-start gap-x-[0.75rem] w-[13rem] h-[3.5rem] p-[0.5rem]">
+    <div className="flex justify-start gap-x-[0.75rem] w-[14rem] h-[3.5rem] p-[0.5rem]">
       <img
         src={logoUrl}
         alt="Bubble Tea Time logo of an orange boba drink."

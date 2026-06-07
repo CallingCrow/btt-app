@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { supabase } from "@/app/supabase-client";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendMerchantNotification } from "@/lib/sendMerchantNotification";
 
 const MAX_TIMESTAMP_AGE_SECONDS = 300; // 5 minutes
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     // 6. Idempotency check (prevent duplicate processing)
-    const { data: existingEvent } = await supabase
+    const { data: existingEvent } = await supabaseAdmin
       .from("webhook_events")
       .select("id")
       .eq("id", eventId)
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     // 7. Store event immediately (idempotency lock)
-    await supabase.from("webhook_events").insert({
+    await supabaseAdmin.from("webhook_events").insert({
       id: eventId,
       type: eventType,
       raw: body,
@@ -61,7 +61,6 @@ export async function POST(req: Request) {
 
     // 8. Handle relevant events
     if (
-      eventType === "PAYMENT_CREATED" ||
       eventType === "ORDER_PAID"
     ) {
       const payment = body?.object;
@@ -84,7 +83,7 @@ export async function POST(req: Request) {
       }
 
       // 9. Update your order in DB
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from("orders")
         .update({
           status: "paid",
@@ -92,6 +91,7 @@ export async function POST(req: Request) {
           customer_name: fullName,
           customer_phone: phone,
           clover_payment_id: payment?.id || null,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", externalId);
 
@@ -103,14 +103,14 @@ export async function POST(req: Request) {
       console.log("Order updated:", externalId);
 
       // Fetch full order, send to merchant
-      const { data: fullOrder } = await supabase
+      const { data: fullOrder } = await supabaseAdmin
         .from("orders")
         .select("*")
         .eq("id", externalId)
         .single();
 
       if (fullOrder) {
-        await supabase
+        await supabaseAdmin
           .from("notification_jobs")
           .insert({
             order_id: externalId,
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
         const externalId = payment?.externalReferenceId;
 
         if (externalId) {
-            await supabase
+            await supabaseAdmin
             .from("orders")
             .update({
                 status: "failed",
@@ -138,7 +138,7 @@ export async function POST(req: Request) {
         const externalId = payment?.externalReferenceId;
 
         if (externalId) {
-            await supabase
+            await supabaseAdmin
             .from("orders")
             .update({
                 status: "refunded",
