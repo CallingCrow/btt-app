@@ -12,8 +12,10 @@ export type MenuItem = {
   image: string;
   descriptionS: string;
   descriptionL: string;
+
   menu_categories: {
     id: string;
+    display_order: number;
     name: string;
   };
 };
@@ -57,12 +59,16 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
       .order("category_id")
       .order("name");
 
+    console.log("Menu data:", data);
+
     if (error) {
       console.error("Error fetching menu:", error.message);
+      setLoading(false);
       return;
     }
 
-    setItems(data || []);
+    //TO DO: UPDATE IN FUTURE
+    setItems((data as unknown as MenuItem[]) || []);
     setLoading(false);
   };
 

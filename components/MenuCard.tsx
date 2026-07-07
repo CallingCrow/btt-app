@@ -46,7 +46,7 @@ const MenuCard = ({
     <div>
       <Card
         onClick={openModal}
-        className="hover:-translate-y-1 py-0 pl-[1rem] flex flex-row justify-between rounded-[0.625rem] h-[8.75rem] cursor-pointer"
+        className="hover:-translate-y-1 transition-transform py-0 pl-[1rem] flex flex-row justify-between rounded-[0.625rem] h-[8.75rem] cursor-pointer"
       >
         <div className="flex flex-col justify-between text-wrap w-full">
           <CardHeader className="pt-[1.25rem] gap-y-[0.375rem]">
