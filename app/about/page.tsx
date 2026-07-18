@@ -8,16 +8,10 @@ import HeroImage from "@/components/HeroImage";
 import { supabase } from "../supabase-client";
 import { useEffect, useState } from "react";
 
-interface infoSection {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  onHome: boolean;
-}
+import type { InfoRecord } from "@/types/db";
 
 const AboutPage = () => {
-  const [infoSections, setNewInfoSections] = useState<infoSection[]>([]);
+  const [infoSections, setInfoSections] = useState<InfoRecord[]>([]);
 
   const fetchInfoSections = async () => {
     const { data, error } = await supabase
@@ -33,7 +27,7 @@ const AboutPage = () => {
       return;
     }
 
-    setNewInfoSections(data);
+    setInfoSections(data);
   };
 
   useEffect(() => {

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import { CartItem } from "@/types/cart";
+import type { ReactNode } from "react";
 
 interface CartContextType {
   cart: CartItem[];
@@ -10,11 +11,15 @@ interface CartContextType {
   clearCart: () => void;
 }
 
+interface CartProviderProps {
+  children: ReactNode;
+}
+
 const MAX_CART_ITEMS = 10;
 
 const CartContext = createContext<CartContextType | null>(null);
 
-export function CartProvider({ children }: any) {
+export function CartProvider({ children }: CartProviderProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   function addToCart(item: CartItem) {

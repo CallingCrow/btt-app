@@ -1,3 +1,5 @@
+import type { SelectedOptions } from "@/types/ui";
+
 export interface CartItem {
   id: string; // cart item id
   itemId: string; // menu item id
@@ -5,6 +7,6 @@ export interface CartItem {
   basePrice: number;
   finalPrice: number; // UI only
   quantity: number;
-  selectedOptions: Record<string, { optionId: number; isDefault?: boolean }[]>;
+  selectedOptions: SelectedOptions;
   customizations: { name: string; price: number }[]; // UI only
 }

@@ -4,7 +4,7 @@ import Image, { StaticImageData } from "next/image";
 interface InfoSectionProps {
   header: string;
   text: string;
-  image: string | StaticImageData;
+  image: string | StaticImageData | null;
   bgPrimary?: boolean;
   layoutPrimary: boolean;
 }
@@ -27,10 +27,16 @@ export const InfoSection = ({
         </div>
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
-            {image===null || image==="" ? (
-              <div></div>
+            {image ? (
+              <Image
+                src={image}
+                width={640}
+                height={400}
+                alt="TO DO"
+                className="2xl:scale-120"
+              />
             ) : (
-              <Image src={image} width={640} height={400} alt="TO DO" className="2xl:scale-120"/>
+              <div></div>
             )}
           </div>
         </div>
@@ -43,10 +49,16 @@ export const InfoSection = ({
       >
         <div>
           <div className="rounded-lg bg-background flex items-center justify-center overflow-hidden mt-[20px] sm:mt-0">
-            {image===null || image==="" ? (
-              <div></div>
+            {image ? (
+              <Image
+                src={image}
+                width={640}
+                height={400}
+                alt="TO DO"
+                className="2xl:scale-120"
+              />
             ) : (
-              <Image src={image} width={640} height={400} alt="TO DO" className="2xl:scale-120"/>
+              <div></div>
             )}
           </div>
         </div>
