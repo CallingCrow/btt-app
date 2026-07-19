@@ -2,20 +2,30 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createCloverCheckout } from "@/lib/clover";
 //import { validateCustomer } from "@/lib/validateCustomer";
 import { validateCart } from "@/lib/validateCart";
+import { toCheckoutJson } from "@/utils/toCheckoutJson";
+import type { SelectedOptions } from "@/types/ui";
+import type {
+  CustomizationGroup,
+  CustomizationOption,
+  CustomizationDefault,
+  Json,
+} from "@/types/db";
+import type { CartCustomization } from "@/types/cart";
+import type { CheckoutLineItem } from "@/types/cart";
 
 const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_CART_ITEMS = 10;
 const TAX_RATE = 0.101; // 10.1%
 
 function uniqueCustomizations(
-  selectedOptions: Record<string, number[]>,
-  optionMap: Record<number, any>
-) {
-  const result: any[] = [];
+  selectedOptions: SelectedOptions,
+  optionMap: Record<string, CustomizationOption>,
+): CartCustomization[] {
+  const result: CartCustomization[] = [];
 
   for (const groupId in selectedOptions) {
-    for (const optionId of selectedOptions[groupId]) {
-      const option = optionMap[optionId];
+    for (const selected of selectedOptions[groupId]) {
+      const option = optionMap[selected.optionId];
 
       if (option) {
         result.push({
@@ -44,19 +54,19 @@ export async function POST(req: Request) {
       throw new Error("Too many items in cart");
     }
 
-    let lineItems: any[] = [];
+    let lineItems: CheckoutLineItem[] = [];
 
     for (const item of items) {
       const { itemId, quantity, selectedOptions = {} } = item;
 
       // normalize selectedOptions into: Record<groupId, number[]>
-      const normalizedSelectedOptions: Record<string, number[]> = {};
-
-      for (const [groupId, value] of Object.entries(selectedOptions)) {
-        normalizedSelectedOptions[groupId] = (value as any[])
-          .map((v) => (typeof v === "object" ? v.optionId : v))
-          .filter(Boolean);
-      }
+      const normalizedSelectedOptions: Record<string, string[]> =
+        Object.fromEntries(
+          Object.entries(selectedOptions).map(([groupId, options]) => [
+            groupId,
+            options.map((o) => o.optionId),
+          ]),
+        );
 
       // quantity validation
       if (
@@ -81,25 +91,29 @@ export async function POST(req: Request) {
       // fetch groups for category
       const { data: categoryGroups } = await supabaseAdmin
         .from("category_customization_groups")
-        .select(`
+        .select(
+          `
           group_id (
             id,
+            name,
+            is_required,
             min_select,
             max_select
           )
-        `)
+        `,
+        )
         .eq("category_id", menuItem.category_id);
 
       const groups = (categoryGroups || [])
-        .map((g: any) => g.group_id)
+        .map((g) => g.group_id)
         .filter(Boolean);
 
-      const groupMap: Record<number, any> = {};
-      groups.forEach((g: any) => {
+      const groupMap: Record<string, CustomizationGroup> = {};
+      groups.forEach((g) => {
         groupMap[g.id] = g;
       });
 
-      const groupIds = groups.map((g: any) => g.id);
+      const groupIds = groups.map((g) => g.id);
 
       // fetch options ONLY for relevant groups
       const { data: optionsData } = await supabaseAdmin
@@ -109,7 +123,7 @@ export async function POST(req: Request) {
 
       const options = optionsData || [];
 
-      const optionMap: Record<number, any> = {};
+      const optionMap: Record<string, CustomizationOption> = {};
       options.forEach((o) => {
         optionMap[o.id] = o;
       });
@@ -117,10 +131,18 @@ export async function POST(req: Request) {
       // fetch defaults
       const { data: defaultsData } = await supabaseAdmin
         .from("customization_defaults")
-        .select("option_id, price_override")
+        .select(
+          `
+          id,
+          item_id,
+          option_id,
+          price_override,
+          is_removable
+        `,
+        )
         .eq("item_id", itemId);
 
-      const defaultsMap: Record<number, any> = {};
+      const defaultsMap: Record<string, CustomizationDefault> = {};
       (defaultsData || []).forEach((d) => {
         defaultsMap[d.option_id] = d;
       });
@@ -133,7 +155,7 @@ export async function POST(req: Request) {
         const group = groupMap[groupId];
 
         // count defaults belonging to this group
-        const defaultCount = Object.values(defaultsMap).filter((d: any) => {
+        const defaultCount = Object.values(defaultsMap).filter((d) => {
           const option = optionMap[d.option_id];
           return option?.group_id === groupId;
         }).length;
@@ -141,15 +163,13 @@ export async function POST(req: Request) {
         const count = uniqueSelected.length + defaultCount;
 
         if (count < group.min_select || count > group.max_select) {
-          throw new Error(
-            `Invalid selection count for group ${groupId}`
-          );
+          throw new Error(`Invalid selection count for group ${groupId}`);
         }
       }
 
       // validate, price options
       for (const groupId in selectedOptions) {
-        const optionIds: number[] = normalizedSelectedOptions[groupId];
+        const optionIds = normalizedSelectedOptions[groupId] ?? [];
         const uniqueOptionIds = [...new Set(optionIds)];
 
         for (const optionId of uniqueOptionIds) {
@@ -193,17 +213,14 @@ export async function POST(req: Request) {
     }
 
     // Calculate order totals
-    const subtotal =
-      lineItems.reduce(
-        (sum, i) => sum + (i.price * i.quantity),
-        0
-      );
+    const subtotal = lineItems.reduce(
+      (sum, i) => sum + i.price * i.quantity,
+      0,
+    );
 
-    const tax =
-      Math.round(subtotal * TAX_RATE);
+    const tax = Math.round(subtotal * TAX_RATE);
 
-    const total =
-      subtotal + tax;
+    const total = subtotal + tax;
 
     // send cart to orders table
     const { data: order, error } = await supabaseAdmin
@@ -215,7 +232,7 @@ export async function POST(req: Request) {
         tax,
         total,
 
-        order_items: lineItems,
+        order_items: toCheckoutJson(lineItems),
       })
       .select()
       .single();
@@ -234,11 +251,12 @@ export async function POST(req: Request) {
     const session = await createCloverCheckout(lineItems, orderId, tax);
 
     return new Response(JSON.stringify(session), { status: 200 });
-  } catch (err: any) {
-    console.error("Checkout error:", err);
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error ? err.message : "Unknown checkout error";
 
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 400,
-    });
+    console.error(err);
+
+    return new Response(JSON.stringify({ error: message }), { status: 400 });
   }
 }

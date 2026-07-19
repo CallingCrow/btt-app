@@ -1,7 +1,5 @@
 import { useCart } from "@/context/CartContext";
-import { useState, useEffect } from "react";
-import buildCloverLineItems from "@/utils/buildCloverPayload";
-import { CartItem } from "@/types/cart";
+import type { CartItem } from "@/types/cart";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "../ui/button";
 
@@ -9,7 +7,7 @@ export default function CartSummary() {
   const { cart } = useCart();
 
   const total = cart.reduce(
-    (sum: number, item: CartItem) => sum + item.finalPrice * item.quantity,
+    (sum, item) => sum + item.finalPrice * item.quantity,
     0,
   );
 
@@ -29,16 +27,7 @@ export default function CartSummary() {
           items: cart.map((item) => ({
             itemId: item.itemId, // real menu item id
             quantity: item.quantity,
-
-            // convert your frontend structure → backend format
-            selectedOptions: Object.fromEntries(
-              Object.entries(item.selectedOptions || {}).map(
-                ([groupId, options]) => [
-                  groupId,
-                  options.map((o: any) => o.optionId),
-                ],
-              ),
-            ),
+            selectedOptions: item.selectedOptions,
           })),
         }),
       });

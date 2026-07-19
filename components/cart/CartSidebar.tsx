@@ -1,6 +1,6 @@
 import { useCart } from "@/context/CartContext";
 import CartSummary from "./CartSummary";
-import { CartItem } from "@/types/cart";
+import type { CartItem } from "@/types/cart";
 import {
   Sheet,
   SheetClose,
@@ -35,7 +35,7 @@ export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
           </SheetHeader>
           <div className="no-scrollbar overflow-y-auto px-4">
             {cart.length === 0 && <p>Your cart is empty</p>}
-            {cart.map((item: CartItem) => (
+            {cart.map((item) => (
               <div key={item.id} className="mb-4">
                 <div className="flex justify-between">
                   <div className="gap-2 flex flex-row">

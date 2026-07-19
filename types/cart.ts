@@ -1,12 +1,53 @@
 import type { SelectedOptions } from "@/types/ui";
 
+export interface CartCustomization {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface CartItem {
   id: string; // cart item id
   itemId: string; // menu item id
   name: string;
   basePrice: number;
-  finalPrice: number; // UI only
+  finalPrice: number;
   quantity: number;
   selectedOptions: SelectedOptions;
-  customizations: { name: string; price: number }[]; // UI only
+  customizations: CartCustomization[];
 }
+
+export interface CheckoutItemRequest {
+  itemId: string;
+  quantity: number;
+  selectedOptions: SelectedOptions;
+}
+
+export interface CheckoutRequest {
+  items: CheckoutItemRequest[];
+}
+
+export type CheckoutLineItem = Omit<
+  CartItem,
+  "id" | "basePrice" | "finalPrice"
+> & {
+  price: number;
+};
+
+export type CheckoutJson = {
+  itemId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  selectedOptions: {
+    [groupId: string]: {
+      optionId: string;
+      isDefault: boolean;
+    }[];
+  };
+  customizations: {
+    id: string;
+    name: string;
+    price: number;
+  }[];
+};

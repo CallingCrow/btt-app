@@ -12,3 +12,5 @@ export type CategoryCustomizationGroup =
   Tables<"category_customization_groups">;
 
 export type InfoRecord = Tables<"info">;
+
+export type { Json } from "./supabase";

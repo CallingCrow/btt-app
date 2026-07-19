@@ -23,7 +23,7 @@ interface CustomizeModalProps {
   id: string;
   name: string;
   price: number;
-  image: string;
+  image: string | null;
   descriptionL: string;
 }
 
@@ -75,7 +75,7 @@ export function CustomizeModal({
       finalPrice,
       quantity,
       selectedOptions,
-      customizations,
+      customizationGroups: customizations,
     });
 
     addToCart(item);

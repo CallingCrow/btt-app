@@ -1,4 +1,4 @@
-import { CartItem } from "@/types/cart";
+import type { CartItem, CartCustomization } from "@/types/cart";
 import type {
   SelectedOptions,
   CustomizationGroupWithOptions,
@@ -13,7 +13,7 @@ interface BuildCartItemProps {
 
   selectedOptions: SelectedOptions;
 
-  customizations: CustomizationGroupWithOptions[];
+  customizationGroups: CustomizationGroupWithOptions[];
 }
 
 export default function buildCartItem({
@@ -23,18 +23,19 @@ export default function buildCartItem({
   finalPrice,
   quantity,
   selectedOptions,
-  customizations,
+  customizationGroups,
 }: BuildCartItemProps): CartItem {
-  const customizationsList: { name: string; price: number }[] = [];
+  const customizationsList: CartCustomization[] = [];
 
   Object.values(selectedOptions).forEach((group) => {
     group.forEach((opt) => {
-      const option = customizations
+      const option = customizationGroups
         ?.flatMap((g) => g.options)
         .find((o) => o.id === opt.optionId);
 
       if (option) {
         customizationsList.push({
+          id: option.id,
           name: option.name,
           price: Number(option.price) || 0,
         });

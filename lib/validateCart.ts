@@ -1,4 +1,12 @@
-export function validateCart(items: unknown) {
+import type { CheckoutItemRequest } from "@/types/cart";
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+export function validateCart(
+  items: unknown,
+): asserts items is CheckoutItemRequest[] {
   if (!Array.isArray(items)) {
     throw new Error("Invalid cart");
   }
@@ -11,10 +19,7 @@ export function validateCart(items: unknown) {
     const cartItem = item as any;
 
     // itemId
-    if (
-      typeof cartItem.itemId !== "string" ||
-      cartItem.itemId.length > 100
-    ) {
+    if (typeof cartItem.itemId !== "string" || cartItem.itemId.length > 100) {
       throw new Error("Invalid item ID");
     }
 
