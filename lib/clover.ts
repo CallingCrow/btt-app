@@ -1,16 +1,31 @@
+import type { CheckoutLineItem } from "@/types/cart";
+
 const CLOVER_BASE =
   process.env.CLOVER_ENV === "production"
     ? "https://api.clover.com"
     : "https://sandbox.dev.clover.com";
 
+interface CloverLineItem {
+  name: string;
+  price: number;
+  unitQty: number;
+}
+
+interface CloverCheckoutPayload {
+  customer: Record<string, never>;
+  shoppingCart: {
+    lineItems: CloverLineItem[];
+  };
+  externalReferenceId: string;
+}
 
 // FOR DEBUG
 export async function createCloverCheckout(
-  cartItems: any[],
+  cartItems: CheckoutLineItem[],
   orderId: string,
-  tax: number
+  tax: number,
 ) {
-  const payload = {
+  const payload: CloverCheckoutPayload = {
     //TEST
     customer: {},
     shoppingCart: {
@@ -24,10 +39,7 @@ export async function createCloverCheckout(
     externalReferenceId: orderId,
   };
 
-  console.log(
-    "CLOVER PAYLOAD:",
-    JSON.stringify(payload, null, 2)
-  );
+  console.log("CLOVER PAYLOAD:", JSON.stringify(payload, null, 2));
 
   const res = await fetch(
     `${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`,
@@ -39,7 +51,7 @@ export async function createCloverCheckout(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
   const text = await res.text();
@@ -55,9 +67,6 @@ export async function createCloverCheckout(
 }
 
 // END FOR DEBUG
-
-
-
 
 // /**
 //  * Create a Clover Hosted Checkout session

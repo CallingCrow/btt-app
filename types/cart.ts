@@ -1,4 +1,5 @@
 import type { SelectedOptions } from "@/types/ui";
+import type { Order } from "./db";
 
 export interface CartCustomization {
   id: string;
@@ -34,7 +35,7 @@ export type CheckoutLineItem = Omit<
   price: number;
 };
 
-export type CheckoutJson = {
+export interface CheckoutJsonItem {
   itemId: string;
   name: string;
   price: number;
@@ -50,4 +51,8 @@ export type CheckoutJson = {
     name: string;
     price: number;
   }[];
+}
+
+export type OrderWithItems = Omit<Order, "order_items"> & {
+  order_items: CheckoutLineItem[];
 };

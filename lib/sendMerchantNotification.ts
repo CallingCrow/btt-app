@@ -1,36 +1,18 @@
 import { resend } from "@/lib/resend";
+import type { OrderWithItems } from "@/types/cart";
 
-interface OrderData {
-  id: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string;
-  subtotal: number;
-  tax: number;
-  total: number;
-  order_items: any[];
-}
-
-export async function sendMerchantNotification(
-  order: OrderData
-) {
-
+export async function sendMerchantNotification(order: OrderWithItems) {
   // Build Order Items Text
 
   let itemsText = "";
 
   for (const item of order.order_items) {
-
-    itemsText +=
-      `${item.quantity}x ${item.name}\n`;
+    itemsText += `${item.quantity}x ${item.name}\n`;
 
     // Customizations
     if (item.customizations?.length) {
-
       for (const c of item.customizations) {
-
-        itemsText +=
-          `  • ${c.name}\n`;
+        itemsText += `  • ${c.name}\n`;
       }
     }
 
@@ -38,8 +20,7 @@ export async function sendMerchantNotification(
   }
 
   // Build Email Content
-  const emailText =
-`
+  const emailText = `
 NEW ORDER
 
 Order ID:
@@ -75,36 +56,22 @@ $${(order.total / 100).toFixed(2)}
 `;
 
   // Send email
-  const { error } =
-    await resend.emails.send({
+  const { error } = await resend.emails.send({
+    from: "orders@yourdomain.com",
 
-      from:
-        "orders@yourdomain.com",
+    to: process.env.MERCHANT_EMAIL!,
 
-      to:
-        process.env.MERCHANT_EMAIL!,
+    subject: `New Order #${order.id}`,
 
-      subject:
-        `New Order #${order.id}`,
-
-      text:
-        emailText,
-    });
+    text: emailText,
+  });
 
   // Handle errors
   if (error) {
+    console.error("Resend error:", error);
 
-    console.error(
-      "Resend error:",
-      error
-    );
-
-    throw new Error(
-      "Failed to send merchant email"
-    );
+    throw new Error("Failed to send merchant email");
   }
 
-  console.log(
-    "Merchant email sent"
-  );
+  console.log("Merchant email sent");
 }

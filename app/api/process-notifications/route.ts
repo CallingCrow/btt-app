@@ -1,12 +1,10 @@
 import { supabase } from "@/app/supabase-client";
-
-import { sendMerchantNotification }
-  from "@/lib/sendMerchantNotification";
+import { sendMerchantNotification } from "@/lib/sendMerchantNotification";
+import type { OrderWithItems, CheckoutLineItem } from "@/types/cart";
+import { fromCheckoutJson } from "@/utils/fromCheckoutJson";
 
 export async function GET(req: Request) {
-
   try {
-
     // Protect route
 
     // const isVercelCron =
@@ -21,19 +19,17 @@ export async function GET(req: Request) {
 
     // Fetch pending jobs
 
-    const { data: jobs, error: jobsError } =
-      await supabase
-        .from("notification_jobs")
-        .select("*")
-        .eq("status", "pending")
-        .limit(10);
+    const { data: jobs, error: jobsError } = await supabase
+      .from("notification_jobs")
+      .select("*")
+      .eq("status", "pending")
+      .limit(10);
 
     if (jobsError) {
       throw jobsError;
     }
 
     if (!jobs?.length) {
-
       return Response.json({
         success: true,
         message: "No pending jobs",
@@ -43,9 +39,7 @@ export async function GET(req: Request) {
     // Process each job
 
     for (const job of jobs) {
-
       try {
-
         // Mark as processing
         await supabase
           .from("notification_jobs")
@@ -55,19 +49,23 @@ export async function GET(req: Request) {
           .eq("id", job.id);
 
         // Fetch order
-        const { data: order, error: orderError } =
-          await supabase
-            .from("orders")
-            .select("*")
-            .eq("id", job.order_id)
-            .single();
+        const { data: order, error: orderError } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("id", job.order_id)
+          .single();
 
         if (orderError || !order) {
           throw new Error("Order not found");
         }
 
+        const typedOrder: OrderWithItems = {
+          ...order,
+          order_items: fromCheckoutJson(order.order_items),
+        };
+
         // Send notification to merchant
-        await sendMerchantNotification(order);
+        await sendMerchantNotification(typedOrder);
 
         // Mark completed
         await supabase
@@ -75,17 +73,11 @@ export async function GET(req: Request) {
           .update({
             status: "completed",
 
-            processed_at:
-              new Date().toISOString(),
+            processed_at: new Date().toISOString(),
           })
           .eq("id", job.id);
-
       } catch (err: any) {
-
-        console.error(
-          "Job processing failed:",
-          err
-        );
+        console.error("Job processing failed:", err);
 
         // Mark Failed
         await supabase
@@ -93,11 +85,9 @@ export async function GET(req: Request) {
           .update({
             status: "failed",
 
-            attempts:
-              (job.attempts || 0) + 1,
+            attempts: (job.attempts || 0) + 1,
 
-            last_error:
-              err.message || "Unknown error",
+            last_error: err.message || "Unknown error",
           })
           .eq("id", job.id);
       }
@@ -107,13 +97,8 @@ export async function GET(req: Request) {
     return Response.json({
       success: true,
     });
-
   } catch (err: any) {
-
-    console.error(
-      "Worker route error:",
-      err
-    );
+    console.error("Worker route error:", err);
 
     return Response.json({
       success: false,

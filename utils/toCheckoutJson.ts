@@ -1,6 +1,6 @@
-import type { CheckoutLineItem, CheckoutJson } from "@/types/cart";
+import type { CheckoutLineItem, CheckoutJsonItem } from "@/types/cart";
 
-export function toCheckoutJson(items: CheckoutLineItem[]): CheckoutJson[] {
+export function toCheckoutJson(items: CheckoutLineItem[]): CheckoutJsonItem[] {
   return items.map((item) => ({
     itemId: item.itemId,
     name: item.name,
