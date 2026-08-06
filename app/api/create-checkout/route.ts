@@ -8,7 +8,6 @@ import type {
   CustomizationGroup,
   CustomizationOption,
   CustomizationDefault,
-  Json,
 } from "@/types/db";
 import type { CartCustomization } from "@/types/cart";
 import type { CheckoutLineItem } from "@/types/cart";
@@ -249,6 +248,7 @@ export async function POST(req: Request) {
     const orderId = order.id;
 
     const session = await createCloverCheckout(lineItems, orderId, tax);
+    console.log("Returning checkout session:", session);
 
     return new Response(JSON.stringify(session), { status: 200 });
   } catch (err: unknown) {
