@@ -39,6 +39,7 @@ export default function CartSummary() {
 
       if (data.href) {
         // redirect user to Clover checkout page
+        console.log("Redirecting to Clover:", data.href);
         window.location.href = data.href;
       } else {
         console.error("No checkout URL returned", data);

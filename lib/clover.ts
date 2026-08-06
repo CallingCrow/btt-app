@@ -11,23 +11,35 @@ interface CloverLineItem {
   unitQty: number;
 }
 
+interface CloverCustomer {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+}
+
 interface CloverCheckoutPayload {
-  customer: Record<string, never>;
+  customer: CloverCustomer;
   shoppingCart: {
     lineItems: CloverLineItem[];
   };
   externalReferenceId: string;
 }
 
-// FOR DEBUG
+interface CloverCheckoutResponse {
+  href: string;
+  checkoutSessionId: string;
+  createdTime: string;
+  expirationTime: string;
+}
+
 export async function createCloverCheckout(
   cartItems: CheckoutLineItem[],
   orderId: string,
   tax: number,
 ) {
   const payload: CloverCheckoutPayload = {
-    //TEST
-    customer: {},
+    customer: {email: "guest@example.com"},
     shoppingCart: {
       lineItems: cartItems.map((item) => ({
         name: item.name,
@@ -63,49 +75,7 @@ export async function createCloverCheckout(
     throw new Error(`Clover error: ${text}`);
   }
 
-  return JSON.parse(text);
+  const session: CloverCheckoutResponse = JSON.parse(text);
+  console.log("CLOVER SESSION: ", session);
+  return session;
 }
-
-// END FOR DEBUG
-
-// /**
-//  * Create a Clover Hosted Checkout session
-//  * @param cartItems Array of line items [{name, price, unitQty}]
-//  */
-// export async function createCloverCheckout(
-//   cartItems: any[],
-//   orderId: string,
-//   tax: number
-// ) {
-//   const res = await fetch(`${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`, {
-//     method: "POST",
-//     headers: {
-//       Authorization: `Bearer ${process.env.CLOVER_API_KEY}`, // private token
-//       "X-Clover-Merchant-ID": process.env.CLOVER_MERCHANT_ID!,
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       shoppingCart: {
-//         lineItems: cartItems.map((item) => ({
-//           name: item.name,
-
-//           price: Math.round(item.price),
-
-//           unitQty: item.quantity,
-//         })),
-//       },
-//       taxAmount: tax,
-//       externalReferenceId: orderId,
-//     }),
-//   });
-
-//   const text = await res.text();
-//   console.log("Clover status:", res.status);
-//   console.log("Clover raw body:", text);
-
-//   if (!res.ok) {
-//     throw new Error(`Clover error: ${text}`);
-//   }
-
-//   return JSON.parse(text); // returns { href: "https://checkout.clover.com/..." }
-// }
