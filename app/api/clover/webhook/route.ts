@@ -33,6 +33,8 @@ export async function POST(req: Request) {
     // 5. Parse JSON AFTER verification
     const body = JSON.parse(rawBody);
 
+    console.log("CLOVER WEBHOOK:", JSON.stringify(body, null, 2));
+
     const eventId = body?.id;
     const eventType = body?.type;
 
@@ -53,16 +55,20 @@ export async function POST(req: Request) {
     }
 
     // 7. Store event immediately (idempotency lock)
-    await supabaseAdmin.from("webhook_events").insert({
+    const { error } = await supabaseAdmin.from("webhook_events").insert({
       id: eventId,
       type: eventType,
+      received_at: new Date().toISOString(),
       raw: body,
     });
 
+    if (error) {
+      console.error(error);
+      return new Response("DB error", { status: 500 });
+    }
+
     // 8. Handle relevant events
-    if (
-      eventType === "ORDER_PAID"
-    ) {
+    if (eventType === "ORDER_PAID") {
       const payment = body?.object;
 
       const customer = payment?.customer || {};
@@ -110,41 +116,39 @@ export async function POST(req: Request) {
         .single();
 
       if (fullOrder) {
-        await supabaseAdmin
-          .from("notification_jobs")
-          .insert({
-            order_id: externalId,
-            type: "merchant_order",
-          });
+        await supabaseAdmin.from("notification_jobs").insert({
+          order_id: externalId,
+          type: "merchant_order",
+        });
       }
     }
 
     if (eventType === "PAYMENT_FAILED") {
-        const payment = body?.object;
-        const externalId = payment?.externalReferenceId;
+      const payment = body?.object;
+      const externalId = payment?.externalReferenceId;
 
-        if (externalId) {
-            await supabaseAdmin
-            .from("orders")
-            .update({
-                status: "failed",
-            })
-            .eq("id", externalId);
-        }
+      if (externalId) {
+        await supabaseAdmin
+          .from("orders")
+          .update({
+            status: "failed",
+          })
+          .eq("id", externalId);
+      }
     }
 
     if (eventType === "PAYMENT_REFUNDED") {
-        const payment = body?.object;
-        const externalId = payment?.externalReferenceId;
+      const payment = body?.object;
+      const externalId = payment?.externalReferenceId;
 
-        if (externalId) {
-            await supabaseAdmin
-            .from("orders")
-            .update({
-                status: "refunded",
-            })
-            .eq("id", externalId);
-        }
+      if (externalId) {
+        await supabaseAdmin
+          .from("orders")
+          .update({
+            status: "refunded",
+          })
+          .eq("id", externalId);
+      }
     }
 
     console.log("Webhook event:", eventType);
@@ -157,7 +161,10 @@ export async function POST(req: Request) {
   }
 }
 
-function verifyCloverSignature(payload: string, header: string): {
+function verifyCloverSignature(
+  payload: string,
+  header: string,
+): {
   valid: boolean;
   timestamp: number;
 } {
@@ -186,10 +193,17 @@ function verifyCloverSignature(payload: string, header: string): {
     .update(signedPayload)
     .digest("hex");
 
-  const isValid = crypto.timingSafeEqual(
-    Buffer.from(expectedSignature),
-    Buffer.from(signature)
-  );
+  const expected = Buffer.from(expectedSignature);
+  const received = Buffer.from(signature);
+
+  if (expected.length !== received.length) {
+    return {
+      valid: false,
+      timestamp: Number(timestamp),
+    };
+  }
+
+  const isValid = crypto.timingSafeEqual(expected, received);
 
   return {
     valid: isValid,
