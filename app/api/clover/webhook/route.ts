@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { sendMerchantNotification } from "@/lib/sendMerchantNotification";
 
 const MAX_TIMESTAMP_AGE_SECONDS = 300; // 5 minutes
 
@@ -43,11 +42,22 @@ export async function POST(req: Request) {
     }
 
     // 6. Idempotency check (prevent duplicate processing)
-    const { data: existingEvent } = await supabaseAdmin
-      .from("webhook_events")
-      .select("id")
-      .eq("id", eventId)
-      .single();
+    const { data: existingEvent, error: existingEventError } =
+      await supabaseAdmin
+        .from("webhook_events")
+        .select("id")
+        .eq("id", eventId)
+        .maybeSingle();
+
+    if (existingEventError) {
+      console.error("Webhook idempotency lookup failed:", existingEventError);
+
+      return new Response("DB error", { status: 500 });
+    }
+
+    if (existingEvent) {
+      return new Response("ok", { status: 200 });
+    }
 
     if (existingEvent) {
       // Already processed → return success so Clover stops retrying
@@ -68,87 +78,107 @@ export async function POST(req: Request) {
     }
 
     // 8. Handle relevant events
-    if (eventType === "ORDER_PAID") {
-      const payment = body?.object;
+    if (eventType === "PAYMENT") {
+      const paymentId = body?.id;
+      const paymentStatus = body?.status;
+      const checkoutSessionId = body?.checkoutSessionId;
 
-      const customer = payment?.customer || {};
-      const order = payment?.order || {};
+      if (!checkoutSessionId) {
+        console.error("Clover PAYMENT webhook missing checkoutSessionId");
 
-      const externalId = payment?.externalReferenceId;
-
-      const email = customer?.email || null;
-      const firstName = customer?.firstName || "";
-      const lastName = customer?.lastName || "";
-      const phone = customer?.phoneNumber || null;
-
-      const fullName = `${firstName} ${lastName}`.trim();
-
-      if (!externalId) {
-        console.error("Missing externalReferenceId");
-        return new Response("Missing reference", { status: 400 });
+        return new Response("Missing checkoutSessionId", { status: 400 });
       }
 
-      // 9. Update your order in DB
-      const { error: updateError } = await supabaseAdmin
-        .from("orders")
-        .update({
-          status: "paid",
-          customer_email: email,
-          customer_name: fullName,
-          customer_phone: phone,
-          clover_payment_id: payment?.id || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", externalId);
-
-      if (updateError) {
-        console.error("Order update failed:", updateError);
-        return new Response("DB error", { status: 500 });
-      }
-
-      console.log("Order updated:", externalId);
-
-      // Fetch full order, send to merchant
-      const { data: fullOrder } = await supabaseAdmin
+      const { data: order, error: orderLookupError } = await supabaseAdmin
         .from("orders")
         .select("*")
-        .eq("id", externalId)
-        .single();
+        .eq("clover_checkout_session_id", checkoutSessionId)
+        .maybeSingle();
 
-      if (fullOrder) {
-        await supabaseAdmin.from("notification_jobs").insert({
-          order_id: externalId,
-          type: "merchant_order",
+      if (orderLookupError) {
+        console.error("Order lookup failed:", orderLookupError);
+
+        return new Response("DB error", {
+          status: 500,
         });
       }
-    }
 
-    if (eventType === "PAYMENT_FAILED") {
-      const payment = body?.object;
-      const externalId = payment?.externalReferenceId;
+      if (!order) {
+        console.error(
+          "No order found for Clover checkout session:",
+          checkoutSessionId,
+        );
 
-      if (externalId) {
-        await supabaseAdmin
+        return new Response("Order not found", {
+          status: 404,
+        });
+      }
+
+      if (paymentStatus === "APPROVED") {
+        const { error: updateError } = await supabaseAdmin
+          .from("orders")
+          .update({
+            status: "paid",
+            clover_payment_id: paymentId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", order.id);
+
+        if (updateError) {
+          console.error("Order update failed:", updateError);
+
+          return new Response("DB error", {
+            status: 500,
+          });
+        }
+
+        console.log("Order marked paid:", order.id);
+
+        const { error: notificationError } = await supabaseAdmin
+          .from("notification_jobs")
+          .insert({
+            order_id: order.id,
+            type: "merchant_order",
+          });
+
+        if (notificationError) {
+          console.error("Notification job creation failed:", notificationError);
+        }
+
+        return new Response("ok", {
+          status: 200,
+        });
+      }
+
+      if (paymentStatus === "DECLINED") {
+        const { error: updateError } = await supabaseAdmin
           .from("orders")
           .update({
             status: "failed",
+            updated_at: new Date().toISOString(),
           })
-          .eq("id", externalId);
-      }
-    }
+          .eq("id", order.id);
 
-    if (eventType === "PAYMENT_REFUNDED") {
-      const payment = body?.object;
-      const externalId = payment?.externalReferenceId;
+        if (updateError) {
+          console.error("Failed to mark order failed:", updateError);
 
-      if (externalId) {
-        await supabaseAdmin
-          .from("orders")
-          .update({
-            status: "refunded",
-          })
-          .eq("id", externalId);
+          return new Response("DB error", {
+            status: 500,
+          });
+        }
+
+        console.log("Order marked failed:", order.id);
+
+        return new Response("ok", {
+          status: 200,
+        });
       }
+
+      console.log("Unhandled Clover payment status:", paymentStatus);
+
+      return new Response("ok", {
+        status: 200,
+      });
     }
 
     console.log("Webhook event:", eventType);
