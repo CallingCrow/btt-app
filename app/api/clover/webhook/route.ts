@@ -3,6 +3,22 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 const MAX_TIMESTAMP_AGE_SECONDS = 300; // 5 minutes
 
+function extractCloverApprovedAmount(message: unknown): number | null {
+  if (typeof message !== "string") {
+    return null;
+  }
+
+  const match = message.match(/^Approved for (\d+)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const amount = Number(match[1]);
+
+  return Number.isSafeInteger(amount) ? amount : null;
+}
+
 export async function POST(req: Request) {
   try {
     // 1. Get signature header
@@ -41,40 +57,32 @@ export async function POST(req: Request) {
       return new Response("Missing event ID", { status: 400 });
     }
 
-    // 6. Idempotency check (prevent duplicate processing)
-    const { data: existingEvent, error: existingEventError } =
-      await supabaseAdmin
-        .from("webhook_events")
-        .select("id")
-        .eq("id", eventId)
-        .maybeSingle();
+    // 6. Store event immediately.
+    // The database's unique constraint on id makes this race-safe.
+    const { error: eventInsertError } = await supabaseAdmin
+      .from("webhook_events")
+      .insert({
+        id: eventId,
+        type: eventType,
+        received_at: new Date().toISOString(),
+        raw: body,
+      });
 
-    if (existingEventError) {
-      console.error("Webhook idempotency lookup failed:", existingEventError);
+    if (eventInsertError) {
+      // PostgreSQL error 23505 = unique violation.
+      // This means Clover sent us this event before.
+      if (eventInsertError.code === "23505") {
+        console.log("Duplicate Clover webhook event:", eventId);
 
-      return new Response("DB error", { status: 500 });
-    }
+        // Returning 200 tells Clover we received it successfully.
+        return new Response("ok", { status: 200 });
+      }
 
-    if (existingEvent) {
-      return new Response("ok", { status: 200 });
-    }
+      console.error("Failed to store webhook event:", eventInsertError);
 
-    if (existingEvent) {
-      // Already processed → return success so Clover stops retrying
-      return new Response("ok", { status: 200 });
-    }
-
-    // 7. Store event immediately (idempotency lock)
-    const { error } = await supabaseAdmin.from("webhook_events").insert({
-      id: eventId,
-      type: eventType,
-      received_at: new Date().toISOString(),
-      raw: body,
-    });
-
-    if (error) {
-      console.error(error);
-      return new Response("DB error", { status: 500 });
+      return new Response("DB error", {
+        status: 500,
+      });
     }
 
     // 8. Handle relevant events
@@ -115,6 +123,46 @@ export async function POST(req: Request) {
       }
 
       if (paymentStatus === "APPROVED") {
+        const approvedAmount = extractCloverApprovedAmount(body?.message);
+
+        if (approvedAmount === null) {
+          console.error(
+            "Unable to determine Clover approved amount:",
+            body?.message,
+          );
+
+          return new Response("Unable to verify payment amount", {
+            status: 400,
+          });
+        }
+
+        const expectedAmount = Number(order.total);
+
+        if (!Number.isSafeInteger(expectedAmount)) {
+          console.error("Invalid order total:", order.total);
+
+          return new Response("Invalid order total", {
+            status: 500,
+          });
+        }
+
+        console.log("Clover approved amount:", approvedAmount);
+        console.log("Expected order amount:", expectedAmount);
+
+        if (approvedAmount !== expectedAmount) {
+          console.error("PAYMENT AMOUNT MISMATCH", {
+            orderId: order.id,
+            checkoutSessionId,
+            paymentId,
+            approvedAmount,
+            expectedAmount,
+          });
+
+          return new Response("Payment amount mismatch", {
+            status: 400,
+          });
+        }
+
         const { error: updateError } = await supabaseAdmin
           .from("orders")
           .update({
@@ -122,7 +170,8 @@ export async function POST(req: Request) {
             clover_payment_id: paymentId,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", order.id);
+          .eq("id", order.id)
+          .eq("status", "pending");
 
         if (updateError) {
           console.error("Order update failed:", updateError);
