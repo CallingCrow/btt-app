@@ -269,7 +269,9 @@ export async function POST(req: Request) {
     }
     console.log("Returning checkout session:", session);
 
-    return new Response(JSON.stringify(session), { status: 200 });
+    return Response.json({
+      href: session.href,
+    });
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "Unknown checkout error";
