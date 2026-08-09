@@ -248,6 +248,25 @@ export async function POST(req: Request) {
     const orderId = order.id;
 
     const session = await createCloverCheckout(lineItems, orderId, tax);
+
+    const { error: cloverSessionError } = await supabaseAdmin
+      .from("orders")
+      .update({
+        clover_checkout_session_id: session.checkoutSessionId,
+      })
+      .eq("id", order.id);
+
+    if (cloverSessionError) {
+      console.error(
+        "Failed to save Clover checkout session:",
+        cloverSessionError,
+      );
+
+      return Response.json(
+        { error: "Failed to initialize payment" },
+        { status: 500 },
+      );
+    }
     console.log("Returning checkout session:", session);
 
     return new Response(JSON.stringify(session), { status: 200 });
