@@ -3,6 +3,8 @@ import { createCloverCheckout } from "@/lib/clover";
 //import { validateCustomer } from "@/lib/validateCustomer";
 import { validateCart } from "@/lib/validateCart";
 import { toCheckoutJson } from "@/utils/toCheckoutJson";
+import { getCloverTaxRates } from "@/lib/cloverTax";
+
 import type { SelectedOptions } from "@/types/ui";
 import type {
   CustomizationGroup,
@@ -41,6 +43,11 @@ function uniqueCustomizations(
 
 export async function POST(req: Request) {
   try {
+    // TO DO REMOVE LATER
+    const cloverTaxRates = await getCloverTaxRates();
+    console.log("CLOVER TAX RATES:", JSON.stringify(cloverTaxRates, null, 2));
+    // END REMOVE LATER
+
     const { items } = await req.json();
     //validateCustomer(customer || {});
     validateCart(items);
