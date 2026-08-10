@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createCloverCheckout } from "@/lib/clover";
+import { getDefaultCloverTaxRate } from "@/lib/cloverTax";
 //import { validateCustomer } from "@/lib/validateCustomer";
 import { validateCart } from "@/lib/validateCart";
 import { toCheckoutJson } from "@/utils/toCheckoutJson";
@@ -16,7 +17,6 @@ import type { CheckoutLineItem } from "@/types/cart";
 
 const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_CART_ITEMS = 10;
-const TAX_RATE = 0.101; // 10.1%
 
 function uniqueCustomizations(
   selectedOptions: SelectedOptions,
@@ -224,9 +224,24 @@ export async function POST(req: Request) {
       0,
     );
 
-    const tax = Math.round(subtotal * TAX_RATE);
+    // Get the merchant's current default tax rate from Clover
+    const cloverTaxRate = await getDefaultCloverTaxRate();
+
+    // Clover represents tax rates in millionths.
+    // Example: 10.1% = 1,010,000.
+    const taxRateDecimal = cloverTaxRate.rate / 10_000_000;
+
+    const tax = Math.round(subtotal * taxRateDecimal);
 
     const total = subtotal + tax;
+
+    console.log("Checkout tax calculation:", {
+      subtotal,
+      cloverTaxRate: cloverTaxRate.rate,
+      taxRateDecimal,
+      tax,
+      total,
+    });
 
     // send cart to orders table
     const { data: order, error } = await supabaseAdmin
@@ -254,7 +269,12 @@ export async function POST(req: Request) {
     }
     const orderId = order.id;
 
-    const session = await createCloverCheckout(lineItems, orderId, tax);
+    const session = await createCloverCheckout(
+      lineItems,
+      orderId,
+      tax,
+      cloverTaxRate.rate,
+    );
 
     const { error: cloverSessionError } = await supabaseAdmin
       .from("orders")

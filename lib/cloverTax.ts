@@ -55,15 +55,16 @@ export async function getCloverTaxRates(): Promise<CloverTaxRate[]> {
 export async function getDefaultCloverTaxRate(): Promise<CloverTaxRate> {
   const taxRates = await getCloverTaxRates();
 
-  if (taxRates.length === 0) {
-    throw new Error("No Clover tax rates configured");
-  }
-
-  const defaultTaxRate = taxRates.find((taxRate) => taxRate.isDefault);
+  const defaultTaxRate = taxRates.find((taxRate) => taxRate.isDefault === true);
 
   if (!defaultTaxRate) {
     throw new Error("No default Clover tax rate configured");
   }
+
+  console.log(
+    "Using Clover default tax rate:",
+    JSON.stringify(defaultTaxRate, null, 2),
+  );
 
   return defaultTaxRate;
 }

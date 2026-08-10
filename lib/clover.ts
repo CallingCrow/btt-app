@@ -43,6 +43,7 @@ export async function createCloverCheckout(
   cartItems: CheckoutLineItem[],
   orderId: string,
   tax: number,
+  cloverTaxRate: number,
 ) {
   const payload: CloverCheckoutPayload = {
     customer: { email: "guest@example.com" },
@@ -54,7 +55,7 @@ export async function createCloverCheckout(
         taxRates: [
           {
             name: "Sales Tax",
-            rate: 1_010_000,
+            rate: cloverTaxRate,
           },
         ],
       })),
