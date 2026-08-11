@@ -5,16 +5,21 @@ const CLOVER_BASE =
     ? "https://api.clover.com"
     : "https://sandbox.dev.clover.com";
 
-interface CloverTaxRate {
+export interface CloverTaxRate {
+  id: string;
   name: string;
   rate: number;
+  isDefault?: boolean;
 }
 
 interface CloverLineItem {
   name: string;
   price: number;
   unitQty: number;
-  taxRates?: CloverTaxRate[];
+  taxRates?: {
+    name: string;
+    rate: number;
+  }[];
 }
 
 interface CloverCustomer {
@@ -43,7 +48,7 @@ export async function createCloverCheckout(
   cartItems: CheckoutLineItem[],
   orderId: string,
   tax: number,
-  cloverTaxRate: number,
+  cloverTaxRate: CloverTaxRate,
 ) {
   const payload: CloverCheckoutPayload = {
     customer: { email: "guest@example.com" },
@@ -54,16 +59,17 @@ export async function createCloverCheckout(
         unitQty: item.quantity,
         taxRates: [
           {
-            name: "Sales Tax",
-            rate: cloverTaxRate,
+            name: cloverTaxRate.name,
+            rate: cloverTaxRate.rate,
           },
         ],
       })),
     },
-    //taxAmount: tax,
+
     externalReferenceId: orderId,
   };
 
+  console.log("CLOVER TAX RATE BEING SENT:", cloverTaxRate);
   console.log("CLOVER PAYLOAD:", JSON.stringify(payload, null, 2));
 
   const res = await fetch(

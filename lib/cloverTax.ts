@@ -1,9 +1,4 @@
-interface CloverTaxRate {
-  id: string;
-  name: string;
-  rate: number;
-  isDefault?: boolean;
-}
+import type { CloverTaxRate } from "./clover";
 
 interface CloverTaxRateResponse {
   elements: CloverTaxRate[];
