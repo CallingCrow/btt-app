@@ -163,7 +163,7 @@ export async function POST(req: Request) {
           });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: updatedOrder, error: updateError } = await supabaseAdmin
           .from("orders")
           .update({
             status: "paid",
@@ -171,7 +171,9 @@ export async function POST(req: Request) {
             updated_at: new Date().toISOString(),
           })
           .eq("id", order.id)
-          .eq("status", "pending");
+          .eq("status", "pending")
+          .select("id")
+          .maybeSingle();
 
         if (updateError) {
           console.error("Order update failed:", updateError);
@@ -181,14 +183,31 @@ export async function POST(req: Request) {
           });
         }
 
+        if (!updatedOrder) {
+          console.log(
+            "Order was already processed or was not pending:",
+            order.id,
+          );
+
+          return new Response("ok", {
+            status: 200,
+          });
+        }
+
         console.log("Order marked paid:", order.id);
 
         const { error: notificationError } = await supabaseAdmin
           .from("notification_jobs")
-          .insert({
-            order_id: order.id,
-            type: "merchant_order",
-          });
+          .upsert(
+            {
+              order_id: order.id,
+              type: "merchant_order",
+            },
+            {
+              onConflict: "order_id,type",
+              ignoreDuplicates: true,
+            },
+          );
 
         if (notificationError) {
           console.error("Notification job creation failed:", notificationError);
@@ -247,8 +266,11 @@ function verifyCloverSignature(
   valid: boolean;
   timestamp: number;
 } {
-  const secret = process.env.CLOVER_WEBHOOK_SECRET!;
-  if (!secret) throw new Error("Missing CLOVER_WEBHOOK_SECRET");
+  const secret = process.env.CLOVER_WEBHOOK_SECRET;
+
+  if (!secret) {
+    throw new Error("Missing CLOVER_WEBHOOK_SECRET");
+  }
 
   const parts = header.split(",");
 
@@ -256,13 +278,34 @@ function verifyCloverSignature(
   let signature = "";
 
   for (const part of parts) {
-    const [key, value] = part.split("=");
-    if (key === "t") timestamp = value;
-    if (key === "v1") signature = value;
+    const [rawKey, ...rawValueParts] = part.trim().split("=");
+
+    const key = rawKey?.trim();
+    const value = rawValueParts.join("=").trim();
+
+    if (key === "t") {
+      timestamp = value;
+    }
+
+    if (key === "v1") {
+      signature = value;
+    }
   }
 
   if (!timestamp || !signature) {
-    return { valid: false, timestamp: 0 };
+    return {
+      valid: false,
+      timestamp: 0,
+    };
+  }
+
+  const timestampNumber = Number(timestamp);
+
+  if (!Number.isFinite(timestampNumber)) {
+    return {
+      valid: false,
+      timestamp: 0,
+    };
   }
 
   const signedPayload = `${timestamp}.${payload}`;
@@ -272,13 +315,13 @@ function verifyCloverSignature(
     .update(signedPayload)
     .digest("hex");
 
-  const expected = Buffer.from(expectedSignature);
-  const received = Buffer.from(signature);
+  const expected = Buffer.from(expectedSignature, "utf8");
+  const received = Buffer.from(signature, "utf8");
 
   if (expected.length !== received.length) {
     return {
       valid: false,
-      timestamp: Number(timestamp),
+      timestamp: timestampNumber,
     };
   }
 
@@ -286,6 +329,6 @@ function verifyCloverSignature(
 
   return {
     valid: isValid,
-    timestamp: Number(timestamp),
+    timestamp: timestampNumber,
   };
 }

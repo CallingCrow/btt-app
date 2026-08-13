@@ -57,7 +57,7 @@ $${(order.total / 100).toFixed(2)}
 
   // Send email
   const { error } = await resend.emails.send({
-    from: "orders@yourdomain.com",
+    from: process.env.RESEND_FROM_EMAIL!,
 
     to: process.env.MERCHANT_EMAIL!,
 
@@ -70,7 +70,7 @@ $${(order.total / 100).toFixed(2)}
   if (error) {
     console.error("Resend error:", error);
 
-    throw new Error("Failed to send merchant email");
+    throw new Error(`Failed to send merchant email: ${error.message}`);
   }
 
   console.log("Merchant email sent");

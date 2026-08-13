@@ -43,11 +43,6 @@ function uniqueCustomizations(
 
 export async function POST(req: Request) {
   try {
-    // TO DO REMOVE LATER
-    const cloverTaxRates = await getCloverTaxRates();
-    console.log("CLOVER TAX RATES:", JSON.stringify(cloverTaxRates, null, 2));
-    // END REMOVE LATER
-
     const { items } = await req.json();
     //validateCustomer(customer || {});
     validateCart(items);

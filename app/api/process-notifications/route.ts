@@ -1,108 +1,251 @@
-import { supabase } from "@/app/supabase-client";
+import crypto from "crypto";
+
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendMerchantNotification } from "@/lib/sendMerchantNotification";
-import type { OrderWithItems, CheckoutLineItem } from "@/types/cart";
+
+import type { OrderWithItems } from "@/types/cart";
 import { fromCheckoutJson } from "@/utils/fromCheckoutJson";
 
 export async function GET(req: Request) {
-  try {
-    // Protect route
+  console.log("CRON_SECRET loaded:", Boolean(process.env.CRON_SECRET));
+  const authorization = req.headers.get("authorization");
 
-    // const isVercelCron =
-    //     req.headers.get("x-vercel-cron");
+  if (
+    !process.env.CRON_SECRET ||
+    authorization !== `Bearer ${process.env.CRON_SECRET}`
+  ) {
+    return new Response("Unauthorized", {
+      status: 401,
+    });
+  }
 
-    // if (!isVercelCron) {
-    //     return new Response(
-    //         "Unauthorized",
-    //         { status: 401 }
-    //     );
-    // }
+  const workerId = `merchant-notification-worker-${crypto.randomUUID()}`;
 
-    // Fetch pending jobs
+  /*
+   * ------------------------------------------------------------
+   * 1. Protect the worker endpoint
+   * ------------------------------------------------------------
+   */
 
-    const { data: jobs, error: jobsError } = await supabase
-      .from("notification_jobs")
-      .select("*")
-      .eq("status", "pending")
-      .limit(10);
+  /*
+   * ------------------------------------------------------------
+   * 2. Claim one job atomically
+   * ------------------------------------------------------------
+   */
 
-    if (jobsError) {
-      throw jobsError;
-    }
+  const { data: job, error: claimError } = await supabaseAdmin.rpc(
+    "claim_notification_job",
+    {
+      worker_id: workerId,
+    },
+  );
 
-    if (!jobs?.length) {
-      return Response.json({
-        success: true,
-        message: "No pending jobs",
-      });
-    }
+  if (claimError) {
+    console.error("Failed to claim notification job:", claimError);
 
-    // Process each job
+    return Response.json(
+      {
+        success: false,
+        error: "Failed to claim notification job",
+      },
+      { status: 500 },
+    );
+  }
 
-    for (const job of jobs) {
-      try {
-        // Mark as processing
-        await supabase
-          .from("notification_jobs")
-          .update({
-            status: "processing",
-          })
-          .eq("id", job.id);
+  /*
+   * No job available.
+   */
 
-        // Fetch order
-        const { data: order, error: orderError } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("id", job.order_id)
-          .single();
-
-        if (orderError || !order) {
-          throw new Error("Order not found");
-        }
-
-        const typedOrder: OrderWithItems = {
-          ...order,
-          order_items: fromCheckoutJson(order.order_items),
-        };
-
-        // Send notification to merchant
-        await sendMerchantNotification(typedOrder);
-
-        // Mark completed
-        await supabase
-          .from("notification_jobs")
-          .update({
-            status: "completed",
-
-            processed_at: new Date().toISOString(),
-          })
-          .eq("id", job.id);
-      } catch (err: any) {
-        console.error("Job processing failed:", err);
-
-        // Mark Failed
-        await supabase
-          .from("notification_jobs")
-          .update({
-            status: "failed",
-
-            attempts: (job.attempts || 0) + 1,
-
-            last_error: err.message || "Unknown error",
-          })
-          .eq("id", job.id);
-      }
-    }
-
-    // Success
+  if (!job) {
     return Response.json({
       success: true,
+      message: "No notification jobs available",
     });
-  } catch (err: any) {
-    console.error("Worker route error:", err);
+  }
+
+  console.log("Claimed notification job:", {
+    jobId: job.id,
+    orderId: job.order_id,
+    type: job.type,
+    attempts: job.attempts,
+    workerId,
+  });
+
+  /*
+   * ------------------------------------------------------------
+   * 3. Process the claimed job
+   * ------------------------------------------------------------
+   */
+
+  try {
+    /*
+     * ----------------------------------------------------------
+     * 3a. Validate notification type
+     * ----------------------------------------------------------
+     */
+
+    if (job.type !== "merchant_order") {
+      throw new Error(`Unsupported notification type: ${job.type}`);
+    }
+
+    /*
+     * ----------------------------------------------------------
+     * 3b. Fetch order
+     * ----------------------------------------------------------
+     */
+
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("id", job.order_id)
+      .single();
+
+    if (orderError) {
+      throw new Error(
+        `Failed to fetch order ${job.order_id}: ${orderError.message}`,
+      );
+    }
+
+    if (!order) {
+      throw new Error(`Order ${job.order_id} was not found`);
+    }
+
+    /*
+     * ----------------------------------------------------------
+     * 3c. Convert order JSON into your application type
+     * ----------------------------------------------------------
+     */
+
+    const typedOrder: OrderWithItems = {
+      ...order,
+      order_items: fromCheckoutJson(order.order_items),
+    };
+
+    /*
+     * ----------------------------------------------------------
+     * 3d. Send merchant notification
+     * ----------------------------------------------------------
+     */
+
+    console.log("Sending merchant notification:", {
+      jobId: job.id,
+      orderId: order.id,
+    });
+
+    await sendMerchantNotification(typedOrder);
+
+    /*
+     * ----------------------------------------------------------
+     * 3e. Mark job completed
+     * ----------------------------------------------------------
+     */
+
+    const { data: completed, error: completeError } = await supabaseAdmin.rpc(
+      "complete_notification_job",
+      {
+        job_id: job.id,
+        worker_id: workerId,
+      },
+    );
+
+    if (completeError) {
+      throw new Error(
+        `Notification was sent, but completion failed: ${completeError.message}`,
+      );
+    }
+
+    if (!completed) {
+      throw new Error(
+        "Notification was sent, but this worker no longer owns the job",
+      );
+    }
+
+    /*
+     * ----------------------------------------------------------
+     * 3f. Done
+     * ----------------------------------------------------------
+     */
+
+    console.log("Notification job completed:", {
+      jobId: job.id,
+      orderId: order.id,
+    });
 
     return Response.json({
-      success: false,
-      error: err.message,
+      success: true,
+      jobId: job.id,
+      orderId: order.id,
     });
+  } catch (err: unknown) {
+    /*
+     * ----------------------------------------------------------
+     * 4. Something went wrong while processing the job
+     * ----------------------------------------------------------
+     */
+
+    const errorMessage =
+      err instanceof Error ? err.message : "Unknown notification error";
+
+    console.error("Notification job failed:", {
+      jobId: job.id,
+      orderId: job.order_id,
+      error: errorMessage,
+    });
+
+    /*
+     * ----------------------------------------------------------
+     * 5. Tell Postgres to retry or permanently fail the job
+     * ----------------------------------------------------------
+     */
+
+    const { data: failed, error: failError } = await supabaseAdmin.rpc(
+      "fail_notification_job",
+      {
+        job_id: job.id,
+        worker_id: workerId,
+        error_message: errorMessage,
+      },
+    );
+
+    if (failError) {
+      console.error("Failed to update failed notification job:", failError);
+
+      return Response.json(
+        {
+          success: false,
+          error: "Notification failed and job status could not be updated",
+        },
+        { status: 500 },
+      );
+    }
+
+    if (!failed) {
+      console.error("Notification job could not be marked failed/retry:", {
+        jobId: job.id,
+        workerId,
+      });
+
+      return Response.json(
+        {
+          success: false,
+          error: "Notification failed and job ownership was lost",
+        },
+        { status: 500 },
+      );
+    }
+
+    console.log("Notification job failure recorded:", {
+      jobId: job.id,
+      retryScheduled: failed,
+    });
+
+    return Response.json(
+      {
+        success: false,
+        jobId: job.id,
+        error: errorMessage,
+      },
+      { status: 500 },
+    );
   }
 }
