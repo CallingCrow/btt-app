@@ -56,7 +56,7 @@ export async function GET(req: Request) {
    * No job available.
    */
 
-  if (!job) {
+  if (!job || job.id == null) {
     return Response.json({
       success: true,
       message: "No notification jobs available",
