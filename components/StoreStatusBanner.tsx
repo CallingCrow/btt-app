@@ -2,99 +2,52 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/app/supabase-client";
-
-type Hours = {
-  day: string;
-  start_time: string;
-  end_time: string;
-  isClosed: boolean;
-};
-
-const DAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-function parseTime(time: string) {
-  const match = time.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
-
-  if (!match) {
-    return null;
-  }
-
-  let hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const period = match[3].toLowerCase();
-
-  if (period === "pm" && hours !== 12) {
-    hours += 12;
-  }
-
-  if (period === "am" && hours === 12) {
-    hours = 0;
-  }
-
-  return {
-    hours,
-    minutes,
-  };
-}
+import {
+  getStoreDateParts,
+  isWithinStoreHours,
+  type StoreHours,
+} from "@/lib/store-hours";
 
 export default function StoreStatusBanner() {
   const [isClosed, setIsClosed] = useState<boolean | null>(null);
 
   useEffect(() => {
     async function checkHours() {
-      const now = new Date();
+      try {
+        const { day, currentMinutes } = getStoreDateParts();
 
-      const today = DAYS[now.getDay()];
+        const { data, error } = await supabase
+          .from("hours")
+          .select("day, start_time, end_time, isClosed")
+          .eq("day", day)
+          .maybeSingle();
 
-      const { data, error } = await supabase
-        .from("hours")
-        .select("day, start_time, end_time, isClosed")
-        .eq("day", today)
-        .maybeSingle();
+        if (error) {
+          console.error("Failed to fetch store hours:", error);
+          setIsClosed(true);
+          return;
+        }
 
-      if (error) {
-        console.error("Failed to fetch store hours:", error);
-        return;
-      }
+        if (!data) {
+          setIsClosed(true);
+          return;
+        }
 
-      if (!data) {
+        const open = isWithinStoreHours(data as StoreHours, currentMinutes);
+
+        setIsClosed(!open);
+      } catch (error) {
+        console.error("Failed to determine store status:", error);
         setIsClosed(true);
-        return;
       }
-
-      if (data.isClosed) {
-        setIsClosed(true);
-        return;
-      }
-
-      const start = parseTime(data.start_time);
-      const end = parseTime(data.end_time);
-
-      if (!start || !end) {
-        console.error("Invalid store hours:", data);
-        return;
-      }
-
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-      const startMinutes = start.hours * 60 + start.minutes;
-      const endMinutes = end.hours * 60 + end.minutes;
-
-      setIsClosed(
-        currentMinutes < startMinutes || currentMinutes >= endMinutes,
-      );
     }
 
     checkHours();
   }, []);
+
+  if (isClosed === null) {
+    return null;
+  }
 
   return (
     <div className="bg-secondary py-1">

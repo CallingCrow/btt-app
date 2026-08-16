@@ -2,7 +2,6 @@ import { useCart } from "@/context/CartContext";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { isStoreOpen } from "@/lib/store-hours";
 
 export default function CartSummary() {
   const { cart } = useCart();
@@ -16,13 +15,6 @@ export default function CartSummary() {
   async function handleCheckout() {
     if (cart.length === 0) {
       alert("Your cart is empty.");
-      return;
-    }
-
-    const storeOpen = await isStoreOpen();
-
-    if (!storeOpen) {
-      setCheckoutError("Bubble Tea Time is closed right now.");
       return;
     }
 
