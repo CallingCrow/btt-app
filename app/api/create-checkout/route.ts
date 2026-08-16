@@ -1,10 +1,10 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createCloverCheckout } from "@/lib/clover";
 import { getDefaultCloverTaxRate } from "@/lib/cloverTax";
-//import { validateCustomer } from "@/lib/validateCustomer";
 import { validateCart } from "@/lib/validateCart";
 import { toCheckoutJson } from "@/utils/toCheckoutJson";
 import { getCloverTaxRates } from "@/lib/cloverTax";
+import { isStoreOpenServer } from "@/lib/store-hours-server";
 
 import type { SelectedOptions } from "@/types/ui";
 import type {
@@ -49,6 +49,17 @@ export async function POST(req: Request) {
 
     if (!Array.isArray(items) || items.length === 0) {
       throw new Error("Cart is empty");
+    }
+
+    const storeOpen = await isStoreOpenServer();
+
+    if (!storeOpen) {
+      return Response.json(
+        {
+          error: "Bubble Tea Time is closed right now.",
+        },
+        { status: 403 },
+      );
     }
 
     if (items.length > MAX_CART_ITEMS) {

@@ -85,21 +85,27 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex justify-center md:justify-start gap-4">
-                  <Link href="/menu">
-                    <Button
-                      variant="default"
-                      size="lg"
-                      className="cursor-pointer"
-                    >
-                      Order Pickup
-                    </Button>
-                  </Link>
                   <Button
+                    asChild
+                    variant="default"
+                    size="lg"
+                    className="cursor-pointer"
+                  >
+                    <Link href="/menu">Order Pickup</Link>
+                  </Button>
+                  <Button
+                    asChild
                     variant="secondary"
                     size="lg"
                     className="cursor-pointer"
                   >
-                    Order Delivery
+                    <a
+                      href="https://www.ubereats.com/ca/store/bubble-tea-time-w-10th-ave/IeY35VC-TOy8DG6Y0wTZQg?utm_campaign=CM2508147-search-free-nonbrand-google-pas_e_all_acq_Global&utm_medium=search-free-nonbrand&utm_source=google-pas&rwg_token=AE37R_jksu7s0PgIpZuxVQEsPgfa3xWj7XwJDmAjJHwgK2LPbGaPNvZVjtLmpS7KJ0pW_OIlO6ckMJWKiVI1KzhJpZlmVZWAgw%3D%3D"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Order Delivery
+                    </a>
                   </Button>
                 </div>
               </div>

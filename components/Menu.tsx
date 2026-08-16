@@ -4,7 +4,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import MenuSection from "./MenuSection";
 import { useMenu } from "@/context/MenuContext";
-import Link from "next/link";
+import StoreStatusBanner from "./StoreStatusBanner";
 
 const Menu = ({ showAll }: any) => {
   const { groupedItems, categories, loading } = useMenu();
@@ -43,18 +43,7 @@ const Menu = ({ showAll }: any) => {
                 </h6>
                 <div></div>
               </div>
-              <div className="bg-secondary py-1">
-                <div className="px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
-                  {/* TO DO: UPDATE LINK */}
-                  Order for Pickup. Order for delivery{" "}
-                  <Link
-                    href="/"
-                    className="text-secondary-foreground underline"
-                  >
-                    here.
-                  </Link>
-                </div>
-              </div>
+              <StoreStatusBanner></StoreStatusBanner>
             </div>
             <div>
               {categories.map((category) => {
@@ -91,17 +80,7 @@ const Menu = ({ showAll }: any) => {
                 </h6>
                 <div></div>
               </div>
-              <div className="bg-secondary py-1">
-                <div className="px-[1.25rem] md:px-[2.5rem] lg:px-[6rem]">
-                  Order for Pickup. Order for delivery{" "}
-                  <Link
-                    href="/"
-                    className="text-secondary-foreground underline"
-                  >
-                    here.
-                  </Link>
-                </div>
-              </div>
+              <StoreStatusBanner></StoreStatusBanner>
             </div>
             <MenuSection
               type={

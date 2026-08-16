@@ -1,10 +1,12 @@
 import { useCart } from "@/context/CartContext";
-import type { CartItem } from "@/types/cart";
+import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { isStoreOpen } from "@/lib/store-hours";
 
 export default function CartSummary() {
   const { cart } = useCart();
+  const [checkoutError, setCheckoutError] = useState("");
 
   const total = cart.reduce(
     (sum, item) => sum + item.finalPrice * item.quantity,
@@ -16,6 +18,15 @@ export default function CartSummary() {
       alert("Your cart is empty.");
       return;
     }
+
+    const storeOpen = await isStoreOpen();
+
+    if (!storeOpen) {
+      setCheckoutError("Bubble Tea Time is closed right now.");
+      return;
+    }
+
+    setCheckoutError("");
 
     try {
       const res = await fetch("/api/create-checkout", {
@@ -37,12 +48,16 @@ export default function CartSummary() {
       console.log("Checkout response status: ", res.status);
       console.log("Checkout response body: ", data);
 
+      if (!res.ok) {
+        setCheckoutError(data.error || "Unable to start checkout.");
+        return;
+      }
+
       if (data.href) {
-        // redirect user to Clover checkout page
         console.log("Redirecting to Clover:", data.href);
         window.location.href = data.href;
       } else {
-        console.error("No checkout URL returned", data);
+        setCheckoutError("Unable to start checkout.");
       }
     } catch (err) {
       console.error("Checkout error:", err);
@@ -55,6 +70,21 @@ export default function CartSummary() {
         <p>Total: {formatCurrency(total)}</p>
       </div>
 
+      {checkoutError && (
+        <div
+          role="alert"
+          className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm"
+        >
+          <div className="flex items-start gap-3">
+            <div>
+              <p className="font-semibold">Bubble Tea Time is closed</p>
+              <p className="text-sm">
+                Please come back during our regular hours to place your order.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <Button
         onClick={handleCheckout}
         disabled={cart.length === 0}
