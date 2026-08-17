@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
+  updateCartItem: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
 }
@@ -32,6 +33,14 @@ export function CartProvider({ children }: CartProviderProps) {
     });
   }
 
+  function updateCartItem(item: CartItem) {
+    setCart((prev) =>
+      prev.map((existingItem) =>
+        existingItem.id === item.id ? item : existingItem,
+      ),
+    );
+  }
+
   function removeFromCart(id: string) {
     setCart((prev) => prev.filter((i) => i.id !== id));
   }
@@ -42,7 +51,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart }}
+      value={{ cart, addToCart, updateCartItem, removeFromCart, clearCart }}
     >
       {children}
     </CartContext.Provider>

@@ -1,15 +1,16 @@
+import { useState } from "react";
+import { CustomizeModal } from "../CustomizeModal";
 import { useCart } from "@/context/CartContext";
+import { useMenu } from "@/context/MenuContext";
 import CartSummary from "./CartSummary";
 import type { CartItem } from "@/types/cart";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { formatCurrency } from "@/lib/utils";
 import CartIcon from "../CartIcon";
@@ -20,7 +21,14 @@ interface CartSidebarProps {
 }
 
 export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
-  const { cart } = useCart();
+  const { cart, removeFromCart } = useCart();
+  const { items } = useMenu();
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+
+  const menuItem = editingItem
+    ? items.find((item) => item.id === editingItem.itemId)
+    : null;
+
   return (
     <div className="">
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -48,6 +56,24 @@ export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
                 <p className="text-[0.875rem] text-gray-500">
                   {item.customizations.map((c) => c.name).join(", ")}
                 </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingItem(item)}
+                    aria-label={`Edit ${item.name}`}
+                    className="cursor-pointer text-primary hover:text-destructive"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeFromCart(item.id)}
+                    aria-label={`Remove ${item.name} from cart`}
+                    className="cursor-pointer text-primary hover:text-destructive"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -56,6 +82,23 @@ export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {editingItem && menuItem && (
+        <CustomizeModal
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingItem(null);
+            }
+          }}
+          id={menuItem.id}
+          name={menuItem.name}
+          price={menuItem.price}
+          image={menuItem.image}
+          descriptionL={menuItem.descriptionL}
+          editingItem={editingItem}
+        />
+      )}
     </div>
   );
 }

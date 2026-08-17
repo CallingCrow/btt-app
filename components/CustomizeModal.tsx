@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import buildCartItem from "@/utils/buildCartItem";
+import type { CartItem } from "@/types/cart";
 import { formatCurrency } from "@/lib/utils";
 import { CustomizeBlock } from "@/components/CustomizeBlock";
 import { useCustomization } from "@/hooks/useCustomization";
@@ -20,6 +21,7 @@ import { useCustomization } from "@/hooks/useCustomization";
 interface CustomizeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingItem?: CartItem;
   id: string;
   name: string;
   price: number;
@@ -30,13 +32,14 @@ interface CustomizeModalProps {
 export function CustomizeModal({
   open,
   onOpenChange,
+  editingItem,
   id,
   name,
   price,
   image,
   descriptionL,
 }: CustomizeModalProps) {
-  const { addToCart } = useCart();
+  const { addToCart, updateCartItem } = useCart();
   const {
     loading,
     customizations,
@@ -46,15 +49,17 @@ export function CustomizeModal({
     finalPrice,
     isValid,
     error,
-  } = useCustomization(id, price, open);
-  const [quantity, setQuantity] = useState(1);
+  } = useCustomization(id, price, open, editingItem?.selectedOptions);
+  const [quantity, setQuantity] = useState(editingItem?.quantity ?? 1);
 
   // reset customizations when modal is closed
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setQuantity(editingItem?.quantity ?? 1);
+    } else {
       setQuantity(1);
     }
-  }, [open]);
+  }, [open, editingItem]);
 
   function handlePlus() {
     if (quantity < 10) {
@@ -78,7 +83,14 @@ export function CustomizeModal({
       customizationGroups: customizations,
     });
 
-    addToCart(item);
+    if (editingItem) {
+      updateCartItem({
+        ...item,
+        id: editingItem.id,
+      });
+    } else {
+      addToCart(item);
+    }
   }
 
   return (
@@ -173,7 +185,7 @@ export function CustomizeModal({
                   onClick={handleAddToCart}
                   disabled={!isValid}
                 >
-                  Add to Cart
+                  {editingItem ? "Update Cart" : "Add to Cart"}
                 </Button>
               </DialogClose>
             </div>

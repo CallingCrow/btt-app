@@ -53,6 +53,7 @@ export default function CartSummary() {
       }
     } catch (err) {
       console.error("Checkout error:", err);
+      setCheckoutError("Unable to start checkout. Please try again.");
     }
   }
 

@@ -32,6 +32,7 @@ export function useCustomization(
   id: string,
   basePrice: number,
   open: boolean,
+  initialSelectedOptions?: SelectedOptions,
 ): UseCustomizationReturn {
   const [loading, setLoading] = useState(false);
   const [customizations, setCustomizations] = useState<
@@ -170,33 +171,36 @@ export function useCustomization(
         if (cancelled) return;
         setDefaultsMap(map);
 
-        // Preselect defaults in frontend state
-        const initialSelected: SelectedOptions = {};
-        (defaults || []).forEach((d) => {
-          const customizationOption = Array.isArray(d.customization_options)
-            ? d.customization_options[0]
-            : d.customization_options;
+        // Initialize selections.
+        //
+        // When editing an existing cart item, use its existing selections.
+        // Otherwise, use the item's defaults.
+        if (initialSelectedOptions) {
+          setSelectedOptions(initialSelectedOptions);
+        } else {
+          const initialSelected: SelectedOptions = {};
 
-          const groupId = customizationOption?.group_id;
-          console.log(
-            "customization_options is array?",
-            Array.isArray(d.customization_options),
-          );
-          console.log(groupId);
-          if (groupId == null) return; // safety check
+          (defaults || []).forEach((d) => {
+            const customizationOption = Array.isArray(d.customization_options)
+              ? d.customization_options[0]
+              : d.customization_options;
 
-          if (!initialSelected[groupId]) {
-            initialSelected[groupId] = [];
-          }
+            const groupId = customizationOption?.group_id;
 
-          initialSelected[groupId].push({
-            optionId: d.option_id,
-            isDefault: true,
+            if (groupId == null) return;
+
+            if (!initialSelected[groupId]) {
+              initialSelected[groupId] = [];
+            }
+
+            initialSelected[groupId].push({
+              optionId: d.option_id,
+              isDefault: true,
+            });
           });
-        });
-        console.log(initialSelected);
-        console.log(defaults);
-        setSelectedOptions(initialSelected);
+
+          setSelectedOptions(initialSelected);
+        }
       } catch (err) {
         console.error("Error fetching customization data:", err);
         setError("Error fetching customization options");
@@ -210,7 +214,7 @@ export function useCustomization(
     return () => {
       cancelled = true;
     };
-  }, [open, id]);
+  }, [open, id, initialSelectedOptions]);
 
   // calculate customization pricing and apply to final price
   useEffect(() => {
