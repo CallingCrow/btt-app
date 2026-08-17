@@ -35,9 +35,6 @@ interface CloverCheckoutPayload {
     lineItems: CloverLineItem[];
   };
   externalReferenceId: string;
-  tips: {
-    enabled: boolean;
-  };
 }
 
 interface CloverCheckoutResponse {
@@ -55,9 +52,6 @@ export async function createCloverCheckout(
 ) {
   const payload: CloverCheckoutPayload = {
     customer: { email: "guest@example.com" },
-    tips: {
-      enabled: true,
-    },
     shoppingCart: {
       lineItems: cartItems.map((item) => ({
         name: item.name,
