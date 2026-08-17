@@ -109,7 +109,7 @@ export const CustomizeBlock = ({
           }
         }
 
-        const isSingle = group.max_select === 1;
+        const isSingle = group.max_select === 1 && group.min_select === 1;
         const isLocked =
           selected && defaultsMap[opt.id] && !defaultsMap[opt.id].is_removable;
 

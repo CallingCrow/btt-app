@@ -1,29 +1,27 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import Brand from "./Brand";
-import { Button } from "./ui/button";
 import CartIcon from "./CartIcon";
 import HamburgerIcon from "./HamburgerIcon";
 import { useState } from "react";
+import { useCart } from "@/context/CartContext";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import CartSidebar from "./cart/CartSidebar";
 
 export function NavBar() {
+  const { cart } = useCart();
+
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const openMenuModal = () => {
     setIsMenuModalOpen(true);
   };
+
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const openCartModal = () => {
     setIsCartModalOpen(true);
@@ -35,8 +33,16 @@ export function NavBar() {
       <div className="md:hidden flex justify-between items-center mx-[1.25rem] h-[3rem]">
         <Brand />
         <div className="flex gap-x-[1rem] items-center">
-          <button onClick={openCartModal} className="cursor-pointer">
-            <CartIcon w={28} h={28}></CartIcon>
+          <button
+            onClick={openCartModal}
+            className="relative cursor-pointer"
+            aria-label="Open cart"
+          >
+            <CartIcon w={28} h={28} />
+
+            {cart.length > 0 && (
+              <span className="absolute -right-1.5 -top-0.25 h-3 w-3 rounded-full bg-red-500" />
+            )}
           </button>
           <button onClick={openMenuModal} className="cursor-pointer">
             <HamburgerIcon w={28} h={28}></HamburgerIcon>
@@ -62,8 +68,16 @@ export function NavBar() {
           </Link>
         </div>
         <div className="flex items-center justify-end">
-          <button onClick={openCartModal} className="cursor-pointer">
-            <CartIcon w={28} h={28}></CartIcon>
+          <button
+            onClick={openCartModal}
+            className="relative cursor-pointer"
+            aria-label="Open cart"
+          >
+            <CartIcon w={28} h={28} />
+
+            {cart.length > 0 && (
+              <span className="absolute -right-1.5 -top-0.25 h-3 w-3 rounded-full bg-red-500" />
+            )}
           </button>
         </div>
       </div>
