@@ -2,10 +2,12 @@ import { useCart } from "@/context/CartContext";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 
 export default function CartSummary() {
   const { cart } = useCart();
   const [checkoutError, setCheckoutError] = useState("");
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const total = cart.reduce(
     (sum, item) => sum + item.finalPrice * item.quantity,
@@ -18,6 +20,7 @@ export default function CartSummary() {
       return;
     }
 
+    setIsCheckingOut(true);
     setCheckoutError("");
 
     try {
@@ -42,6 +45,7 @@ export default function CartSummary() {
 
       if (!res.ok) {
         setCheckoutError(data.error || "Unable to start checkout.");
+        setIsCheckingOut(false);
         return;
       }
 
@@ -50,17 +54,19 @@ export default function CartSummary() {
         window.location.href = data.href;
       } else {
         setCheckoutError("Unable to start checkout.");
+        setIsCheckingOut(false);
       }
     } catch (err) {
       console.error("Checkout error:", err);
       setCheckoutError("Unable to start checkout. Please try again.");
+      setIsCheckingOut(false);
     }
   }
 
   return (
     <div className="space-y-4">
-      <div className="pt-4">
-        <p>Total: {formatCurrency(total)}</p>
+      <div className="pt-2">
+        <p>Subtotal: {formatCurrency(total)}</p>
       </div>
 
       {checkoutError && (
@@ -80,14 +86,21 @@ export default function CartSummary() {
       )}
       <Button
         onClick={handleCheckout}
-        disabled={cart.length === 0}
+        disabled={cart.length === 0 || isCheckingOut}
         className={`w-full ${
           cart.length === 0
             ? "bg-gray-300 text-gray-600 cursor-not-allowed"
             : "cursor-pointer"
         }`}
       >
-        Checkout
+        {isCheckingOut ? (
+          <>
+            Checkout
+            <Spinner />
+          </>
+        ) : (
+          "Checkout"
+        )}
       </Button>
     </div>
   );
