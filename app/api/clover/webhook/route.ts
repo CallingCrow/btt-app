@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { getCloverCustomerFromPayment } from "@/lib/clover";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 const MAX_TIMESTAMP_AGE_SECONDS = 300; // 5 minutes
@@ -163,11 +164,32 @@ export async function POST(req: Request) {
           });
         }
 
+        // retrieve customer information
+        const cloverCustomer = await getCloverCustomerFromPayment(paymentId);
+        const customerEmail =
+          cloverCustomer?.emailAddresses?.elements?.find(
+            (email) => email.primaryEmail,
+          )?.emailAddress ??
+          cloverCustomer?.emailAddresses?.elements?.[0]?.emailAddress ??
+          null;
+
+        const customerName =
+          [cloverCustomer?.firstName, cloverCustomer?.lastName]
+            .filter(Boolean)
+            .join(" ") || null;
+
+        const customerPhone =
+          cloverCustomer?.phoneNumbers?.elements?.[0]?.phoneNumber ?? null;
+        console.log("Clover customer:", cloverCustomer);
+
         const { data: updatedOrder, error: updateError } = await supabaseAdmin
           .from("orders")
           .update({
             status: "paid",
             clover_payment_id: paymentId,
+            customer_email: customerEmail,
+            customer_name: customerName,
+            customer_phone: customerPhone,
             updated_at: new Date().toISOString(),
           })
           .eq("id", order.id)
