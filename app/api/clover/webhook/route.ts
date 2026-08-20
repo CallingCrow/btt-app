@@ -180,7 +180,10 @@ export async function POST(req: Request) {
 
         const customerPhone =
           cloverCustomer?.phoneNumbers?.elements?.[0]?.phoneNumber ?? null;
-        console.log("Clover customer:", cloverCustomer);
+        console.log(
+          "Clover customer FULL:",
+          JSON.stringify(cloverCustomer, null, 2),
+        );
 
         const { data: updatedOrder, error: updateError } = await supabaseAdmin
           .from("orders")
