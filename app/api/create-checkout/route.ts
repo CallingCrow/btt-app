@@ -43,9 +43,31 @@ function uniqueCustomizations(
 
 export async function POST(req: Request) {
   try {
-    const { items } = await req.json();
+    const { customer, items } = await req.json();
     //validateCustomer(customer || {});
     validateCart(items);
+
+    const customerName =
+      typeof customer?.name === "string" ? customer.name.trim() : "";
+
+    const customerEmail =
+      typeof customer?.email === "string" ? customer.email.trim() : "";
+
+    const customerPhone =
+      typeof customer?.phone === "string" ? customer.phone.trim() : "";
+
+    // If no customer info
+    if (!customerName) {
+      throw new Error("Customer name is required");
+    }
+
+    if (!customerEmail) {
+      throw new Error("Customer email is required");
+    }
+
+    if (!customerPhone) {
+      throw new Error("Customer email is required");
+    }
 
     if (!Array.isArray(items) || items.length === 0) {
       throw new Error("Cart is empty");
@@ -259,12 +281,13 @@ export async function POST(req: Request) {
     const { data: order, error } = await supabaseAdmin
       .from("orders")
       .insert({
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
         status: "pending",
-
         subtotal,
         tax,
         total,
-
         order_items: toCheckoutJson(lineItems),
       })
       .select()
