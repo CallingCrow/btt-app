@@ -50,21 +50,15 @@ export function validateCustomer(customer: Customer) {
 
   const phone = customer.phone.trim();
 
-  if (phone.length > 30) {
-    throw new Error("Phone number is too long");
-  }
-
-  // Allow common phone-number characters:
-  // digits, spaces, parentheses, hyphens, periods, and +
-  const phonePattern = /^[0-9+().\-\s]+$/;
-
-  if (!phonePattern.test(phone)) {
-    throw new Error("Please enter a valid phone number");
+  if (!/^\d{3}-\d{3}-\d{4}$/.test(phone)) {
+    throw new Error(
+      "Please enter your phone number in the format XXX-XXX-XXXX",
+    );
   }
 
   return {
     name: customer.name.trim(),
-    email,
-    phone,
+    email: customer.email.trim(),
+    phone: customer.phone.trim(),
   };
 }

@@ -29,6 +29,13 @@ interface CloverCustomer {
   phoneNumber?: string;
 }
 
+// customer information from website
+export interface CheckoutCustomer {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 interface CloverCheckoutPayload {
   customer: CloverCustomer;
   shoppingCart: {
@@ -49,9 +56,19 @@ export async function createCloverCheckout(
   orderId: string,
   tax: number,
   cloverTaxRate: CloverTaxRate,
+  customer: CheckoutCustomer,
 ) {
+  // split first and last name
+  const nameParts = customer.name.trim().split(/\s+/);
+  const firstName = nameParts[0];
+  const lastName = nameParts.slice(1).join(" ");
+
   const payload: CloverCheckoutPayload = {
-    customer: { email: "guest@example.com" },
+    customer: {
+      firstName,
+      lastName,
+      email: customer.email,
+    },
     shoppingCart: {
       lineItems: cartItems.map((item) => ({
         name: item.name,

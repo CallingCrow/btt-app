@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     if (!customerPhone) {
-      throw new Error("Customer email is required");
+      throw new Error("Customer phone number is required");
     }
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -310,6 +310,7 @@ export async function POST(req: Request) {
       orderId,
       tax,
       cloverTaxRate,
+      validatedCustomer,
     );
 
     const { error: cloverSessionError } = await supabaseAdmin

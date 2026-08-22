@@ -98,6 +98,8 @@ export default function CartSummary() {
           id="customerName"
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
+          placeholder="John Doe"
+          maxLength={50}
           required
           className="mt-1 -mb-2"
         />
@@ -110,6 +112,8 @@ export default function CartSummary() {
           type="email"
           value={customerEmail}
           onChange={(e) => setCustomerEmail(e.target.value)}
+          placeholder="JohnDoe@example.com"
+          maxLength={50}
           required
           className="mt-1 -mb-2"
         />
@@ -122,6 +126,8 @@ export default function CartSummary() {
           type="tel"
           value={customerPhone}
           onChange={(e) => setCustomerPhone(e.target.value)}
+          placeholder="XXX-XXX-XXXX"
+          maxLength={12}
           required
           className="mt-1 -mb-2"
         />
