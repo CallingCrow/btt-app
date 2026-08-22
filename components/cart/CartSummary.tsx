@@ -20,6 +20,8 @@ export default function CartSummary() {
   );
 
   async function handleCheckout() {
+    setCheckoutError("");
+
     if (cart.length === 0) {
       alert("Your cart is empty.");
       return;
@@ -133,14 +135,7 @@ export default function CartSummary() {
           role="alert"
           className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm"
         >
-          <div className="flex items-start gap-3">
-            <div>
-              <p className="font-semibold">Bubble Tea Time is closed</p>
-              <p className="text-sm">
-                Please come back during our regular hours to place your order.
-              </p>
-            </div>
-          </div>
+          <p className="font-semibold">{checkoutError}</p>
         </div>
       )}
       <Button

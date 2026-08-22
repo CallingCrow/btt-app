@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createCloverCheckout } from "@/lib/clover";
 import { getDefaultCloverTaxRate } from "@/lib/cloverTax";
 import { validateCart } from "@/lib/validateCart";
+import { validateCustomer } from "@/lib/validateCustomer";
 import { toCheckoutJson } from "@/utils/toCheckoutJson";
 import { getCloverTaxRates } from "@/lib/cloverTax";
 import { isStoreOpenServer } from "@/lib/store-hours-server";
@@ -44,7 +45,7 @@ function uniqueCustomizations(
 export async function POST(req: Request) {
   try {
     const { customer, items } = await req.json();
-    //validateCustomer(customer || {});
+    const validatedCustomer = validateCustomer(customer);
     validateCart(items);
 
     const customerName =
@@ -281,10 +282,10 @@ export async function POST(req: Request) {
     const { data: order, error } = await supabaseAdmin
       .from("orders")
       .insert({
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
         status: "pending",
+        customer_name: validatedCustomer.name,
+        customer_email: validatedCustomer.email,
+        customer_phone: validatedCustomer.phone,
         subtotal,
         tax,
         total,
