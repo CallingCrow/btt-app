@@ -16,6 +16,10 @@ export async function sendMerchantNotification(order: OrderWithItems) {
       }
     }
 
+    // Customer Request
+    itemsText += `Customer Request:\n`;
+    itemsText += `  ${item.customerRequest?.trim() || "N/A"}\n`;
+
     itemsText += "\n";
   }
 

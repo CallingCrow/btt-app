@@ -56,6 +56,13 @@ export default function CartSidebar({ open, onOpenChange }: CartSidebarProps) {
                 <p className="text-[0.875rem] text-gray-500">
                   {item.customizations.map((c) => c.name).join(", ")}
                 </p>
+                {item.customerRequest?.trim() && (
+                  <div className="text-[0.875rem]">
+                    <p className="text-gray-500">
+                      {item.customerRequest.trim()}
+                    </p>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button
                     type="button"
