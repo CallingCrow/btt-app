@@ -175,7 +175,7 @@ export function CustomizeModal({
                   htmlFor="customer-request"
                   className="text-[1.25rem] font-medium"
                 >
-                  Customer Request
+                  Customer Request (Optional)
                 </label>
 
                 <Textarea

@@ -243,7 +243,7 @@ export async function POST(req: Request) {
         price: unitPrice,
         quantity,
         selectedOptions,
-        customerRequest,
+        customerRequest: customerRequest.trim(),
         customizations: uniqueCustomizations(selectedOptions, optionMap),
       });
     }
