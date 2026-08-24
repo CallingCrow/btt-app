@@ -16,12 +16,14 @@ export interface CartItem {
   quantity: number;
   selectedOptions: SelectedOptions;
   customizations: CartCustomization[];
+  customerRequest: string;
 }
 
 export interface CheckoutItemRequest {
   itemId: string;
   quantity: number;
   selectedOptions: SelectedOptions;
+  customerRequest: string;
 }
 
 export interface CheckoutRequest {

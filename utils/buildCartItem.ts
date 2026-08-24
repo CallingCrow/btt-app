@@ -14,6 +14,7 @@ interface BuildCartItemProps {
   selectedOptions: SelectedOptions;
 
   customizationGroups: CustomizationGroupWithOptions[];
+  customerRequest: string;
 }
 
 export default function buildCartItem({
@@ -24,6 +25,7 @@ export default function buildCartItem({
   quantity,
   selectedOptions,
   customizationGroups,
+  customerRequest: string,
 }: BuildCartItemProps): CartItem {
   const customizationsList: CartCustomization[] = [];
 
@@ -52,5 +54,6 @@ export default function buildCartItem({
     quantity,
     selectedOptions,
     customizations: customizationsList, //UI display
+    customerRequest: string,
   };
 }

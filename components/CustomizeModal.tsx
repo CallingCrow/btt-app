@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CirclePlus, CircleMinus } from "lucide-react";
+import { Textarea } from "./ui/textarea";
 import {
   Dialog,
   DialogClose,
@@ -51,13 +52,18 @@ export function CustomizeModal({
     error,
   } = useCustomization(id, price, open, editingItem?.selectedOptions);
   const [quantity, setQuantity] = useState(editingItem?.quantity ?? 1);
+  const [customerRequest, setCustomerRequest] = useState(
+    editingItem?.customerRequest ?? "",
+  );
 
   // reset customizations when modal is closed
   useEffect(() => {
     if (open) {
       setQuantity(editingItem?.quantity ?? 1);
+      setCustomerRequest(editingItem?.customerRequest ?? "");
     } else {
       setQuantity(1);
+      setCustomerRequest("");
     }
   }, [open, editingItem]);
 
@@ -81,6 +87,7 @@ export function CustomizeModal({
       quantity,
       selectedOptions,
       customizationGroups: customizations,
+      customerRequest: customerRequest.trim(),
     });
 
     if (editingItem) {
@@ -163,6 +170,27 @@ export function CustomizeModal({
                   />
                 ))
               )}
+              <div className="mt-6">
+                <label
+                  htmlFor="customer-request"
+                  className="text-[1.25rem] font-medium"
+                >
+                  Customer Request
+                </label>
+
+                <Textarea
+                  id="customer-request"
+                  value={customerRequest}
+                  onChange={(e) => setCustomerRequest(e.target.value)}
+                  maxLength={250}
+                  placeholder="Add a special request..."
+                  className="mt-2 min-h-[100px] bg-white"
+                />
+
+                <div className="mt-1 text-right text-sm text-muted-foreground">
+                  {customerRequest.length}/250
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter className="py-2 px-[2.5rem] h-[3.75rem] flex items-center">

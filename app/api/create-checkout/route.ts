@@ -92,7 +92,12 @@ export async function POST(req: Request) {
     let lineItems: CheckoutLineItem[] = [];
 
     for (const item of items) {
-      const { itemId, quantity, selectedOptions = {} } = item;
+      const {
+        itemId,
+        quantity,
+        selectedOptions = {},
+        customerRequest = "",
+      } = item;
 
       // normalize selectedOptions into: Record<groupId, number[]>
       const normalizedSelectedOptions: Record<string, string[]> =
@@ -234,15 +239,11 @@ export async function POST(req: Request) {
 
       lineItems.push({
         itemId,
-
         name: menuItem.name,
-
         price: unitPrice,
-
         quantity,
-
         selectedOptions,
-
+        customerRequest,
         customizations: uniqueCustomizations(selectedOptions, optionMap),
       });
     }

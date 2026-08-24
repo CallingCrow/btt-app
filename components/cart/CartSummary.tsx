@@ -114,6 +114,7 @@ export default function CartSummary() {
             itemId: item.itemId, // real menu item id
             quantity: item.quantity,
             selectedOptions: item.selectedOptions,
+            customerRequest: item.customerRequest,
           })),
         }),
       });
