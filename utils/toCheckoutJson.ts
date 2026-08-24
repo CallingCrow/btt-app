@@ -9,5 +9,6 @@ export function toCheckoutJson(items: CheckoutLineItem[]): Json {
     quantity: item.quantity,
     selectedOptions: item.selectedOptions,
     customizations: item.customizations,
+    customerRequest: item.customerRequest,
   })) as unknown as Json;
 }
