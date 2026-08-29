@@ -5,12 +5,9 @@ import { InfoSection } from "@/components/InfoSection";
 import Footer from "@/components/Footer";
 import Menu from "@/components/Menu";
 import { Button } from "@/components/ui/button";
-import backupImg from "@/public/Backup.jpg";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase-client";
 import Link from "next/link";
-import { heroImage } from "@/types/images";
 import HeroImage from "@/components/HeroImage";
 
 interface infoSection {
@@ -23,43 +20,26 @@ interface infoSection {
 
 export default function Home() {
   const [infoSections, setNewInfoSections] = useState<infoSection[]>([]);
-  const [heroImage, setHeroImage] = useState<heroImage | null>(null);
-
-  const fetchInfoSections = async () => {
-    const { data, error } = await supabase
-      .from("info")
-      .select("*")
-      .eq("onHome", true);
-
-    if (error) {
-      console.error("Error fetching info section on home page", error.message);
-      return;
-    }
-
-    setNewInfoSections(data);
-  };
 
   useEffect(() => {
-    fetchInfoSections();
-  }, []);
+    const loadInfoSections = async () => {
+      const { data, error } = await supabase
+        .from("info")
+        .select("*")
+        .eq("onHome", true);
 
-  const fetchHeroImage = async () => {
-    const { data, error } = await supabase
-      .from("hero_images")
-      .select("*")
-      .eq("page", "home")
-      .maybeSingle();
+      if (error) {
+        console.error(
+          "Error fetching info section on home page",
+          error.message,
+        );
+        return;
+      }
 
-    if (error) {
-      console.error("Error fetching hero image on home page", error.message);
-      return;
-    }
+      setNewInfoSections(data);
+    };
 
-    setHeroImage(data);
-  };
-
-  useEffect(() => {
-    fetchHeroImage();
+    loadInfoSections();
   }, []);
 
   return (

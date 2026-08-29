@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { Button } from "./ui/button";
 import InstagramIcon from "./icons/InstagramIcon";
 import FacebookIcon from "./icons/FacebookIcon";
@@ -26,37 +25,31 @@ const Footer = () => {
   const [hours, setHours] = useState<day[]>([]);
   const [contactInfoList, setContactInfoList] = useState<contactInfo[]>([]);
 
-  const fetchHours = async () => {
-    const { data, error } = await supabase
-      .from("hours")
-      .select("*")
-      .order("id");
-
-    if (error) {
-      console.error("Error fetching hours", error.message);
-      return;
-    }
-
-    setHours(data);
-  };
-
   useEffect(() => {
-    fetchHours();
-  }, []);
+    const fetchFooterData = async () => {
+      const { data: hoursData, error: hoursError } = await supabase
+        .from("hours")
+        .select("*")
+        .order("id");
 
-  const fetchcontactInfoList = async () => {
-    const { data, error } = await supabase.from("contact_info").select("*");
+      if (hoursError) {
+        console.error("Error fetching hours", hoursError.message);
+      } else {
+        setHours(hoursData);
+      }
 
-    if (error) {
-      console.error("Error fetching contact info:", error.message);
-      return;
-    }
+      const { data: contactData, error: contactError } = await supabase
+        .from("contact_info")
+        .select("*");
 
-    setContactInfoList(data);
-  };
+      if (contactError) {
+        console.error("Error fetching contact info:", contactError.message);
+      } else {
+        setContactInfoList(contactData);
+      }
+    };
 
-  useEffect(() => {
-    fetchcontactInfoList();
+    fetchFooterData();
   }, []);
 
   return (

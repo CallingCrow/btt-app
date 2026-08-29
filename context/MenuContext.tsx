@@ -1,8 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/app/supabase-client";
-import { useMemo } from "react";
 
 export type MenuItem = {
   id: string;
@@ -12,7 +11,6 @@ export type MenuItem = {
   image: string;
   descriptionS: string;
   descriptionL: string;
-
   menu_categories: {
     id: string;
     display_order: number;
@@ -50,11 +48,11 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
         descriptionS,
         descriptionL,
         menu_categories (
-            id,
-            display_order,
-            name
+          id,
+          display_order,
+          name
         )
-    `,
+      `,
       )
       .order("category_id")
       .order("name");
@@ -67,31 +65,79 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    //TO DO: UPDATE IN FUTURE
+    // TODO: UPDATE IN FUTURE
     setItems((data as unknown as MenuItem[]) || []);
     setLoading(false);
   };
 
+  // const fetchCategories = async () => {
+  //   const { data, error } = await supabase
+  //     .from("menu_categories")
+  //     .select("*")
+  //     .order("display_order");
+
+  //   if (error) {
+  //     console.error("Error fetching categories:", error.message);
+  //     return;
+  //   }
+
+  //   setCategories(data || []);
+  // };
+
   useEffect(() => {
-    fetchMenu();
+    const loadMenu = async () => {
+      const { data, error } = await supabase
+        .from("menu")
+        .select(
+          `
+          id,
+          name,
+          category_id,
+          price,
+          image,
+          descriptionS,
+          descriptionL,
+          menu_categories (
+            id,
+            display_order,
+            name
+          )
+        `,
+        )
+        .order("category_id")
+        .order("name");
+
+      console.log("Menu data:", data);
+
+      if (error) {
+        console.error("Error fetching menu:", error.message);
+        setLoading(false);
+        return;
+      }
+
+      setItems((data as unknown as MenuItem[]) || []);
+      setLoading(false);
+    };
+
+    void loadMenu();
   }, []);
 
-  const fetchCategories = async () => {
-    const { data, error } = await supabase
-      .from("menu_categories")
-      .select("*")
-      .order("display_order");
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setCategories(data || []);
-  };
-
   useEffect(() => {
-    fetchCategories();
+    const loadCategories = async () => {
+      const { data, error } = await supabase
+        .from("menu_categories")
+        .select("*")
+        .order("display_order");
+
+      if (error) {
+        console.error("Error fetching categories:", error.message);
+        return;
+      }
+
+      setCategories(data || []);
+    };
+
+    void loadCategories();
   }, []);
 
   const groupedItems = useMemo(() => {
@@ -101,6 +147,7 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
       const categoryId = item.category_id;
 
       if (!categoryId) return;
+
       if (!map.has(categoryId)) {
         map.set(categoryId, []);
       }

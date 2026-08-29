@@ -2,7 +2,6 @@ import { NavBar } from "@/components/NavBar";
 import Menu from "@/components/Menu";
 import React from "react";
 import Footer from "@/components/Footer";
-import { supabase } from "../supabase-client";
 import HeroImage from "@/components/HeroImage";
 
 const MenuPage = () => {

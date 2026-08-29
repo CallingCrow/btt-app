@@ -4,7 +4,6 @@ import { getDefaultCloverTaxRate } from "@/lib/cloverTax";
 import { validateCart } from "@/lib/validateCart";
 import { validateCustomer } from "@/lib/validateCustomer";
 import { toCheckoutJson } from "@/utils/toCheckoutJson";
-import { getCloverTaxRates } from "@/lib/cloverTax";
 import { isStoreOpenServer } from "@/lib/store-hours-server";
 
 import type { SelectedOptions } from "@/types/ui";
@@ -89,7 +88,7 @@ export async function POST(req: Request) {
       throw new Error("Too many items in cart");
     }
 
-    let lineItems: CheckoutLineItem[] = [];
+    const lineItems: CheckoutLineItem[] = [];
 
     for (const item of items) {
       const {

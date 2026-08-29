@@ -1,13 +1,19 @@
 "use client";
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+
 import MenuSection from "./MenuSection";
+
 import { useMenu } from "@/context/MenuContext";
+
 import StoreStatusBanner from "./StoreStatusBanner";
 
-const Menu = ({ showAll }: any) => {
-  const { groupedItems, categories, loading } = useMenu();
+interface MenuProps {
+  showAll: boolean;
+}
+
+const Menu = ({ showAll }: MenuProps) => {
+  const { groupedItems, categories } = useMenu();
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -17,11 +23,7 @@ const Menu = ({ showAll }: any) => {
       ?.scrollIntoView({ block: "center", behavior: "smooth" });
   }
 
-  useEffect(() => {
-    if (categories.length && selectedCategory === null) {
-      setSelectedCategory(categories[0].id);
-    }
-  }, [categories]);
+  const activeCategoryId = selectedCategory ?? categories[0]?.id ?? null;
 
   return (
     <div>
@@ -41,13 +43,17 @@ const Menu = ({ showAll }: any) => {
                     </button>
                   ))}
                 </h6>
+
                 <div></div>
               </div>
-              <StoreStatusBanner></StoreStatusBanner>
+
+              <StoreStatusBanner />
             </div>
+
             <div>
               {categories.map((category) => {
                 const items = groupedItems.get(category.id) || [];
+
                 if (!items.length) return null;
 
                 return (
@@ -72,21 +78,27 @@ const Menu = ({ showAll }: any) => {
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`cursor-pointer hover:text-primary ${selectedCategory === category.id && "font-semibold"}`}
+                      className={`cursor-pointer hover:text-primary ${
+                        activeCategoryId === category.id ? "font-semibold" : ""
+                      }`}
                     >
                       {category.name}
                     </button>
                   ))}
                 </h6>
+
                 <div></div>
               </div>
-              <StoreStatusBanner></StoreStatusBanner>
+
+              <StoreStatusBanner />
             </div>
+
             <MenuSection
               type={
-                categories.find((c) => c.id === selectedCategory)?.name || ""
+                categories.find((category) => category.id === activeCategoryId)
+                  ?.name || ""
               }
-              items={groupedItems.get(selectedCategory!) || []}
+              items={groupedItems.get(activeCategoryId ?? "") || []}
               showHeader={false}
               isAdmin={false}
             />

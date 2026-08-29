@@ -12,22 +12,23 @@ interface heroImageProps {
 
 export default function HeroImage({ page }: heroImageProps) {
   const [heroImage, setHeroImage] = useState<heroImage | null>(null);
-  const fetchHeroImage = async () => {
-    const { data, error } = await supabase
-      .from("hero_images")
-      .select("*")
-      .eq("page", page)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error fetching hero image on home page", error.message);
-      return;
-    }
-
-    setHeroImage(data);
-  };
 
   useEffect(() => {
+    const fetchHeroImage = async () => {
+      const { data, error } = await supabase
+        .from("hero_images")
+        .select("*")
+        .eq("page", page)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching hero image on home page", error.message);
+        return;
+      }
+
+      setHeroImage(data);
+    };
+
     fetchHeroImage();
   }, [page]);
 

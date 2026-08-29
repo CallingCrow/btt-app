@@ -13,24 +13,24 @@ import type { InfoRecord } from "@/types/db";
 const AboutPage = () => {
   const [infoSections, setInfoSections] = useState<InfoRecord[]>([]);
 
-  const fetchInfoSections = async () => {
-    const { data, error } = await supabase
-      .from("info")
-      .select("*")
-      .eq("onHome", false);
-
-    if (error) {
-      console.error(
-        "Error fetching info section on about page:",
-        error.message,
-      );
-      return;
-    }
-
-    setInfoSections(data);
-  };
-
   useEffect(() => {
+    const fetchInfoSections = async () => {
+      const { data, error } = await supabase
+        .from("info")
+        .select("*")
+        .eq("onHome", false);
+
+      if (error) {
+        console.error(
+          "Error fetching info section on about page:",
+          error.message,
+        );
+        return;
+      }
+
+      setInfoSections(data);
+    };
+
     fetchInfoSections();
   }, []);
 

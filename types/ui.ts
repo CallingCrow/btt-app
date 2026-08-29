@@ -1,19 +1,13 @@
-import type {
-  CustomizationGroup,
-  CustomizationOption,
-  CustomizationDefault,
-} from "./db";
+import type { CustomizationGroup, CustomizationOption } from "./db";
 
 export interface SelectedOption {
   optionId: string;
   isDefault: boolean;
 }
 
-export type SelectedOptions =
-  Record<string, SelectedOption[]>;
+export type SelectedOptions = Record<string, SelectedOption[]>;
 
-export interface CustomizationGroupWithOptions
-  extends CustomizationGroup {
+export interface CustomizationGroupWithOptions extends CustomizationGroup {
   options: CustomizationOption[];
 }
 

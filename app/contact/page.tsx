@@ -16,19 +16,19 @@ interface contactInfo {
 const ContactPage = () => {
   const [contactInfoList, setContactInfoList] = useState<contactInfo[]>([]);
 
-  const fetchcontactInfoList = async () => {
-    const { data, error } = await supabase.from("contact_info").select("*");
-
-    if (error) {
-      console.error("Error fetching contact info:", error.message);
-      return;
-    }
-
-    setContactInfoList(data);
-  };
-
   useEffect(() => {
-    fetchcontactInfoList();
+    const loadContactInfo = async () => {
+      const { data, error } = await supabase.from("contact_info").select("*");
+
+      if (error) {
+        console.error("Error fetching contact info:", error.message);
+        return;
+      }
+
+      setContactInfoList(data);
+    };
+
+    loadContactInfo();
   }, []);
 
   const { data } = supabase.storage.from("misc-images").getPublicUrl("map.png");

@@ -30,12 +30,10 @@ const formatCurrency = (cents: number) => {
 const MenuCard = ({
   id,
   name,
-  category_id,
   price,
   image,
   descriptionS,
   descriptionL,
-  isAdmin,
 }: MenuCardProps) => {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const openModal = () => {

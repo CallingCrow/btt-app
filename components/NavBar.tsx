@@ -5,6 +5,7 @@ import Brand from "./Brand";
 import CartIcon from "./CartIcon";
 import HamburgerIcon from "./HamburgerIcon";
 import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useCart } from "@/context/CartContext";
 import {
   Dialog,
@@ -95,8 +96,8 @@ export function NavBar() {
 }
 
 interface MenuModalProps {
-  open: any;
-  onOpenChange: any;
+  open: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
 }
 
 export function MenuModal({ open, onOpenChange }: MenuModalProps) {

@@ -9,9 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import buildCartItem from "@/utils/buildCartItem";
 import type { CartItem } from "@/types/cart";
@@ -56,25 +55,15 @@ export function CustomizeModal({
     editingItem?.customerRequest ?? "",
   );
 
-  // reset customizations when modal is closed
-  useEffect(() => {
-    if (open) {
-      setQuantity(editingItem?.quantity ?? 1);
-      setCustomerRequest(editingItem?.customerRequest ?? "");
-    } else {
-      setQuantity(1);
-      setCustomerRequest("");
-    }
-  }, [open, editingItem]);
-
   function handlePlus() {
     if (quantity < 10) {
-      setQuantity((a) => a + 1);
+      setQuantity((current) => current + 1);
     }
   }
+
   function handleMinus() {
     if (quantity > 1) {
-      setQuantity((a) => a - 1);
+      setQuantity((current) => current - 1);
     }
   }
 
@@ -101,7 +90,20 @@ export function CustomizeModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) {
+          setQuantity(editingItem?.quantity ?? 1);
+          setCustomerRequest(editingItem?.customerRequest ?? "");
+        } else {
+          setQuantity(1);
+          setCustomerRequest("");
+        }
+
+        onOpenChange(nextOpen);
+      }}
+    >
       <DialogContent className="flex flex-col w-full h-full rounded-none md:rounded-lg md:flex-row md:w-[80vw] md:h-[80vh]">
         {/* Image on left only on desktop */}
         <div className="hidden md:flex">

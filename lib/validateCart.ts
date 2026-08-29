@@ -12,11 +12,11 @@ export function validateCart(
   }
 
   for (const item of items) {
-    if (typeof item !== "object" || item === null) {
+    if (!isObject(item)) {
       throw new Error("Invalid cart item");
     }
 
-    const cartItem = item as any;
+    const cartItem = item;
 
     // itemId
     if (typeof cartItem.itemId !== "string" || cartItem.itemId.length > 100) {
