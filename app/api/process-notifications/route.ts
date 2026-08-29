@@ -7,7 +7,6 @@ import type { OrderWithItems } from "@/types/cart";
 import { fromCheckoutJson } from "@/utils/fromCheckoutJson";
 
 export async function GET(req: Request) {
-  console.log("CRON_SECRET loaded:", Boolean(process.env.CRON_SECRET));
   const authorization = req.headers.get("authorization");
 
   if (
