@@ -48,10 +48,16 @@ export async function POST(req: Request) {
     // 5. Parse JSON AFTER verification
     const body = JSON.parse(rawBody);
 
-    console.log("CLOVER WEBHOOK:", JSON.stringify(body, null, 2));
-
     const eventId = body?.id;
     const eventType = body?.type;
+
+    console.log("CLOVER WEBHOOK:", {
+      eventId,
+      eventType,
+      paymentStatus: body?.status,
+      paymentId: body?.id,
+      checkoutSessionId: body?.checkoutSessionId,
+    });
 
     if (!eventId) {
       return new Response("Missing event ID", { status: 400 });
@@ -250,7 +256,6 @@ export async function POST(req: Request) {
     }
 
     console.log("Webhook event:", eventType);
-    console.log("Webhook body:", body);
 
     return new Response("ok", { status: 200 });
   } catch (err) {
@@ -299,9 +304,23 @@ function verifyCloverSignature(
     };
   }
 
+  if (!/^[0-9a-fA-F]{64}$/.test(signature)) {
+    return {
+      valid: false,
+      timestamp: 0,
+    };
+  }
+
+  if (!/^\d+$/.test(timestamp)) {
+    return {
+      valid: false,
+      timestamp: 0,
+    };
+  }
+
   const timestampNumber = Number(timestamp);
 
-  if (!Number.isFinite(timestampNumber)) {
+  if (!Number.isSafeInteger(timestampNumber) || timestampNumber <= 0) {
     return {
       valid: false,
       timestamp: 0,
