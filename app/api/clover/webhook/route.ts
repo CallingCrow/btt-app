@@ -48,6 +48,12 @@ export async function POST(req: Request) {
     // 5. Parse JSON AFTER verification
     const body = JSON.parse(rawBody);
 
+    // Verify this webhook belongs to our configured Clover merchant
+    if (body?.merchantId !== process.env.CLOVER_MERCHANT_ID) {
+      console.error("Clover merchant ID mismatch");
+      return new Response("Invalid merchant", { status: 401 });
+    }
+
     const eventId = body?.id;
     const eventType = body?.type;
 
