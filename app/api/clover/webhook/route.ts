@@ -48,6 +48,21 @@ export async function POST(req: Request) {
     // 5. Parse JSON AFTER verification
     const body = JSON.parse(rawBody);
 
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      console.error("Invalid Clover webhook payload");
+      return new Response("Invalid webhook payload", { status: 400 });
+    }
+
+    if (
+      typeof body.id !== "string" ||
+      !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+        body.id,
+      )
+    ) {
+      console.error("Invalid Clover webhook event ID");
+      return new Response("Invalid webhook event ID", { status: 400 });
+    }
+
     // Verify this webhook belongs to our configured Clover merchant
     if (body?.merchantId !== process.env.CLOVER_MERCHANT_ID) {
       console.error("Clover merchant ID mismatch");
@@ -56,6 +71,11 @@ export async function POST(req: Request) {
 
     const eventId = body?.id;
     const eventType = body?.type;
+
+    if (eventType !== "PAYMENT") {
+      console.error("Invalid Clover webhook type");
+      return new Response("Invalid webhook type", { status: 400 });
+    }
 
     console.log("CLOVER WEBHOOK:", {
       eventId,
@@ -98,172 +118,190 @@ export async function POST(req: Request) {
     }
 
     // 8. Handle relevant events
-    if (eventType === "PAYMENT") {
-      const paymentId = body?.id;
-      const paymentStatus = body?.status;
-      const checkoutSessionId = body?.checkoutSessionId;
+    const paymentId = body?.id;
+    const paymentStatus = body?.status;
+    const checkoutSessionId = body?.checkoutSessionId;
 
-      if (!checkoutSessionId) {
-        console.error("Clover PAYMENT webhook missing checkoutSessionId");
+    if (typeof paymentStatus !== "string") {
+      return new Response("Invalid payment status", { status: 400 });
+    }
 
-        return new Response("Missing checkoutSessionId", { status: 400 });
+    if (paymentStatus !== "APPROVED" && paymentStatus !== "DECLINED") {
+      return new Response("Invalid payment status", { status: 400 });
+    }
+
+    if (
+      typeof checkoutSessionId !== "string" ||
+      !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+        checkoutSessionId,
+      )
+    ) {
+      console.error("Invalid Clover checkoutSessionId");
+      return new Response("Invalid checkoutSessionId", { status: 400 });
+    }
+
+    const { data: order, error: orderLookupError } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("clover_checkout_session_id", checkoutSessionId)
+      .maybeSingle();
+
+    if (orderLookupError) {
+      console.error("Order lookup failed:", orderLookupError);
+
+      return new Response("DB error", {
+        status: 500,
+      });
+    }
+
+    if (!order) {
+      console.error(
+        "No order found for Clover checkout session:",
+        checkoutSessionId,
+      );
+
+      return new Response("Order not found", {
+        status: 404,
+      });
+    }
+
+    if (paymentStatus === "APPROVED") {
+      const approvedAmount = extractCloverApprovedAmount(body?.message);
+
+      if (approvedAmount === null) {
+        console.error(
+          "Unable to determine Clover approved amount:",
+          body?.message,
+        );
+
+        return new Response("Unable to verify payment amount", {
+          status: 400,
+        });
       }
 
-      const { data: order, error: orderLookupError } = await supabaseAdmin
+      const expectedAmount = Number(order.total);
+
+      if (!Number.isSafeInteger(expectedAmount)) {
+        console.error("Invalid order total:", order.total);
+
+        return new Response("Invalid order total", {
+          status: 500,
+        });
+      }
+
+      console.log("Clover approved amount:", approvedAmount);
+      console.log("Expected order amount:", expectedAmount);
+
+      if (approvedAmount !== expectedAmount) {
+        console.error("PAYMENT AMOUNT MISMATCH", {
+          orderId: order.id,
+          checkoutSessionId,
+          paymentId,
+          approvedAmount,
+          expectedAmount,
+        });
+
+        return new Response("Payment amount mismatch", {
+          status: 400,
+        });
+      }
+
+      const { data: updatedOrder, error: updateError } = await supabaseAdmin
         .from("orders")
-        .select("*")
-        .eq("clover_checkout_session_id", checkoutSessionId)
+        .update({
+          status: "paid",
+          clover_payment_id: paymentId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", order.id)
+        .eq("status", "pending")
+        .select("id")
         .maybeSingle();
 
-      if (orderLookupError) {
-        console.error("Order lookup failed:", orderLookupError);
+      if (updateError) {
+        console.error("Order update failed:", updateError);
 
         return new Response("DB error", {
           status: 500,
         });
       }
 
-      if (!order) {
-        console.error(
-          "No order found for Clover checkout session:",
-          checkoutSessionId,
+      if (!updatedOrder) {
+        console.log(
+          "Order was already processed or was not pending:",
+          order.id,
         );
 
-        return new Response("Order not found", {
-          status: 404,
-        });
-      }
-
-      if (paymentStatus === "APPROVED") {
-        const approvedAmount = extractCloverApprovedAmount(body?.message);
-
-        if (approvedAmount === null) {
-          console.error(
-            "Unable to determine Clover approved amount:",
-            body?.message,
-          );
-
-          return new Response("Unable to verify payment amount", {
-            status: 400,
-          });
-        }
-
-        const expectedAmount = Number(order.total);
-
-        if (!Number.isSafeInteger(expectedAmount)) {
-          console.error("Invalid order total:", order.total);
-
-          return new Response("Invalid order total", {
-            status: 500,
-          });
-        }
-
-        console.log("Clover approved amount:", approvedAmount);
-        console.log("Expected order amount:", expectedAmount);
-
-        if (approvedAmount !== expectedAmount) {
-          console.error("PAYMENT AMOUNT MISMATCH", {
-            orderId: order.id,
-            checkoutSessionId,
-            paymentId,
-            approvedAmount,
-            expectedAmount,
-          });
-
-          return new Response("Payment amount mismatch", {
-            status: 400,
-          });
-        }
-
-        const { data: updatedOrder, error: updateError } = await supabaseAdmin
-          .from("orders")
-          .update({
-            status: "paid",
-            clover_payment_id: paymentId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", order.id)
-          .eq("status", "pending")
-          .select("id")
-          .maybeSingle();
-
-        if (updateError) {
-          console.error("Order update failed:", updateError);
-
-          return new Response("DB error", {
-            status: 500,
-          });
-        }
-
-        if (!updatedOrder) {
-          console.log(
-            "Order was already processed or was not pending:",
-            order.id,
-          );
-
-          return new Response("ok", {
-            status: 200,
-          });
-        }
-
-        console.log("Order marked paid:", order.id);
-
-        const { error: notificationError } = await supabaseAdmin
-          .from("notification_jobs")
-          .upsert(
-            {
-              order_id: order.id,
-              type: "merchant_order",
-            },
-            {
-              onConflict: "order_id,type",
-              ignoreDuplicates: true,
-            },
-          );
-
-        if (notificationError) {
-          console.error("Notification job creation failed:", notificationError);
-        }
-
         return new Response("ok", {
           status: 200,
         });
       }
 
-      if (paymentStatus === "DECLINED") {
-        const { error: updateError } = await supabaseAdmin
-          .from("orders")
-          .update({
-            status: "failed",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", order.id);
+      console.log("Order marked paid:", order.id);
 
-        if (updateError) {
-          console.error("Failed to mark order failed:", updateError);
+      const { error: notificationError } = await supabaseAdmin
+        .from("notification_jobs")
+        .upsert(
+          {
+            order_id: order.id,
+            type: "merchant_order",
+          },
+          {
+            onConflict: "order_id,type",
+            ignoreDuplicates: true,
+          },
+        );
 
-          return new Response("DB error", {
-            status: 500,
-          });
-        }
-
-        console.log("Order marked failed:", order.id);
-
-        return new Response("ok", {
-          status: 200,
-        });
+      if (notificationError) {
+        console.error("Notification job creation failed:", notificationError);
       }
-
-      console.log("Unhandled Clover payment status:", paymentStatus);
 
       return new Response("ok", {
         status: 200,
       });
     }
 
-    console.log("Webhook event:", eventType);
+    if (paymentStatus === "DECLINED") {
+      const { data: updatedOrder, error: updateError } = await supabaseAdmin
+        .from("orders")
+        .update({
+          status: "failed",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", order.id)
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
 
-    return new Response("ok", { status: 200 });
+      if (updateError) {
+        console.error("Failed to mark order failed:", updateError);
+        return new Response("DB error", {
+          status: 500,
+        });
+      }
+
+      if (!updatedOrder) {
+        console.log(
+          "Order was already processed or was not pending:",
+          order.id,
+        );
+        return new Response("ok", {
+          status: 200,
+        });
+      }
+
+      console.log("Order marked failed:", order.id);
+
+      return new Response("ok", {
+        status: 200,
+      });
+    }
+
+    console.log("Unhandled Clover payment status:", paymentStatus);
+
+    return new Response("ok", {
+      status: 200,
+    });
   } catch (err) {
     console.error("Webhook error:", err);
     return new Response("error", { status: 500 });
