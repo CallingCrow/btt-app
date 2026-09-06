@@ -117,7 +117,7 @@ export function useCustomization(
 
         const { data: optionsData, error: optionsError } = await supabase
           .from("customization_options")
-          .select("id, name, price, group_id")
+          .select("id, name, price, group_id, display_order")
           .in("group_id", groupIds)
           .order("display_order", { ascending: true });
 
