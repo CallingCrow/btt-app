@@ -17,6 +17,7 @@ import type { CheckoutLineItem } from "@/types/cart";
 
 const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_CART_ITEMS = 10;
+const MAX_CUSTOMER_REQUEST_LENGTH = 1000;
 
 function uniqueCustomizations(
   selectedOptions: SelectedOptions,
@@ -98,6 +99,14 @@ export async function POST(req: Request) {
         customerRequest = "",
       } = item;
 
+      if (typeof customerRequest !== "string") {
+        throw new Error("Invalid customer request");
+      }
+
+      if (customerRequest.length > MAX_CUSTOMER_REQUEST_LENGTH) {
+        throw new Error("Customer request is too long");
+      }
+
       // normalize selectedOptions into: Record<groupId, number[]>
       const normalizedSelectedOptions: Record<string, string[]> =
         Object.fromEntries(
@@ -157,7 +166,7 @@ export async function POST(req: Request) {
       // fetch options ONLY for relevant groups
       const { data: optionsData } = await supabaseAdmin
         .from("customization_options")
-        .select("id, name, price, group_id")
+        .select("id, name, price, group_id, display_order")
         .in("group_id", groupIds);
 
       const options = optionsData || [];

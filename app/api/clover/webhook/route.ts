@@ -89,8 +89,9 @@ export async function POST(req: Request) {
       return new Response("Missing event ID", { status: 400 });
     }
 
-    // 6. Store event immediately.
-    // The database's unique constraint on id makes this race-safe.
+    // 6. Record the webhook event, or inspect an existing event.
+    // A unique constraint on id makes this race-safe.
+
     const { error: eventInsertError } = await supabaseAdmin
       .from("webhook_events")
       .insert({
@@ -98,23 +99,57 @@ export async function POST(req: Request) {
         type: eventType,
         received_at: new Date().toISOString(),
         raw: body,
+        status: "received",
       });
 
     if (eventInsertError) {
       // PostgreSQL error 23505 = unique violation.
-      // This means Clover sent us this event before.
+      // The event already exists, so inspect its processing state.
       if (eventInsertError.code === "23505") {
-        console.log("Duplicate Clover webhook event:", eventId);
+        const { data: existingEvent, error: existingEventError } =
+          await supabaseAdmin
+            .from("webhook_events")
+            .select("status")
+            .eq("id", eventId)
+            .maybeSingle();
 
-        // Returning 200 tells Clover we received it successfully.
-        return new Response("ok", { status: 200 });
+        if (existingEventError) {
+          console.error(
+            "Failed to look up existing webhook event:",
+            existingEventError,
+          );
+          return new Response("DB error", {
+            status: 500,
+          });
+        }
+
+        if (!existingEvent) {
+          console.error(
+            "Webhook event disappeared after duplicate insert:",
+            eventId,
+          );
+          return new Response("DB error", {
+            status: 500,
+          });
+        }
+
+        if (existingEvent.status === "processed") {
+          console.log("Already processed Clover webhook event:", eventId);
+          return new Response("ok", { status: 200 });
+        }
+
+        console.log(
+          "Retrying unprocessed Clover webhook event:",
+          eventId,
+          "status:",
+          existingEvent.status,
+        );
+      } else {
+        console.error("Failed to store webhook event:", eventInsertError);
+        return new Response("DB error", {
+          status: 500,
+        });
       }
-
-      console.error("Failed to store webhook event:", eventInsertError);
-
-      return new Response("DB error", {
-        status: 500,
-      });
     }
 
     // 8. Handle relevant events
