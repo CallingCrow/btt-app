@@ -17,6 +17,7 @@ interface CloverLineItem {
   price: number;
   unitQty: number;
   taxRates?: {
+    id: string;
     name: string;
     rate: number;
   }[];
