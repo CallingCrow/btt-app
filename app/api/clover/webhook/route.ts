@@ -54,12 +54,7 @@ export async function POST(req: Request) {
       return new Response("Invalid webhook payload", { status: 400 });
     }
 
-    if (
-      typeof body.id !== "string" ||
-      !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
-        body.id,
-      )
-    ) {
+    if (typeof body.id !== "string" || body.id.trim() === "") {
       console.error("Invalid Clover webhook event ID");
       return new Response("Invalid webhook event ID", { status: 400 });
     }
