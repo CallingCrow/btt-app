@@ -74,6 +74,13 @@ export async function createCloverCheckout(
         name: item.name,
         price: Math.round(item.price),
         unitQty: item.quantity,
+        taxRates: [
+          {
+            id: cloverTaxRate.id,
+            name: cloverTaxRate.name,
+            rate: cloverTaxRate.rate,
+          },
+        ],
       })),
     },
 
