@@ -269,13 +269,10 @@ export async function POST(req: Request) {
     // Example: 10.1% = 1,010,000.
     const taxRateDecimal = cloverTaxRate.rate / 10_000_000;
 
-    // Clover calculates tax at the line-item level.
-    // Mirror that calculation locally so our expected
-    // order total matches the amount Clover charges.
-    const tax = lineItems.reduce((sum, item) => {
-      const lineSubtotal = item.price * item.quantity;
-      return sum + Math.round(lineSubtotal * taxRateDecimal);
-    }, 0);
+    // Clover calculates tax by grouping taxable amounts
+    // associated with the same tax-rate entity, then
+    // rounding the resulting tax amount.
+    const tax = Math.round(subtotal * taxRateDecimal);
 
     const total = subtotal + tax;
 
