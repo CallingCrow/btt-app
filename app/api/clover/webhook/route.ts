@@ -47,6 +47,7 @@ export async function POST(req: Request) {
 
     // 5. Parse JSON AFTER verification
     const body = JSON.parse(rawBody);
+    console.log("RAW CLOVER WEBHOOK BODY:", JSON.stringify(body, null, 2));
 
     if (typeof body !== "object" || body === null || Array.isArray(body)) {
       console.error("Invalid Clover webhook payload");
