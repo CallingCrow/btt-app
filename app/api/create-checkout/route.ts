@@ -18,6 +18,7 @@ import type { CheckoutLineItem } from "@/types/cart";
 const MAX_QUANTITY_PER_ITEM = 10;
 const MAX_CART_ITEMS = 10;
 const MAX_CUSTOMER_REQUEST_LENGTH = 1000;
+const MAX_REQUEST_BODY_BYTES = 32 * 1024; // 32 KB
 
 function uniqueCustomizations(
   selectedOptions: SelectedOptions,
@@ -44,7 +45,17 @@ function uniqueCustomizations(
 
 export async function POST(req: Request) {
   try {
+    const rawBody = await req.text();
+
+    if (new TextEncoder().encode(rawBody).length > MAX_REQUEST_BODY_BYTES) {
+      return Response.json(
+        { error: "Request body is too large" },
+        { status: 413 },
+      );
+    }
+
     const { customer, items } = await req.json();
+
     const validatedCustomer = validateCustomer(customer);
     validateCart(items);
 
