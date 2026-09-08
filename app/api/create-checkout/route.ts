@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { customer, items } = await req.json();
+    const { customer, items } = JSON.parse(rawBody);
 
     const validatedCustomer = validateCustomer(customer);
     validateCart(items);
