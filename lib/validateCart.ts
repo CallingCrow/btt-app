@@ -1,5 +1,9 @@
 import type { CheckoutItemRequest } from "@/types/cart";
 
+const MAX_CUSTOMIZATION_GROUPS = 10;
+const MAX_OPTIONS_PER_GROUP = 10;
+const MAX_TOTAL_SELECTED_OPTIONS = 50;
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -32,11 +36,52 @@ export function validateCart(
     }
 
     // selectedOptions
+    // selectedOptions
     if (
-      cartItem.selectedOptions &&
-      typeof cartItem.selectedOptions !== "object"
+      cartItem.selectedOptions !== undefined &&
+      !isObject(cartItem.selectedOptions)
     ) {
       throw new Error("Invalid selected options");
+    }
+
+    if (isObject(cartItem.selectedOptions)) {
+      const groupIds = Object.keys(cartItem.selectedOptions);
+
+      if (groupIds.length > MAX_CUSTOMIZATION_GROUPS) {
+        throw new Error("Too many customization groups");
+      }
+
+      let totalSelectedOptions = 0;
+
+      for (const groupId of groupIds) {
+        const options = cartItem.selectedOptions[groupId];
+
+        if (!Array.isArray(options)) {
+          throw new Error("Invalid selected options");
+        }
+
+        if (options.length > MAX_OPTIONS_PER_GROUP) {
+          throw new Error(
+            "Too many options selected for a customization group",
+          );
+        }
+
+        for (const option of options) {
+          if (
+            !isObject(option) ||
+            typeof option.optionId !== "string" ||
+            option.optionId.length === 0
+          ) {
+            throw new Error("Invalid selected option");
+          }
+        }
+
+        totalSelectedOptions += options.length;
+
+        if (totalSelectedOptions > MAX_TOTAL_SELECTED_OPTIONS) {
+          throw new Error("Too many customization options selected");
+        }
+      }
     }
   }
 }
