@@ -270,18 +270,21 @@ export async function POST(req: Request) {
 
       console.log("Order marked paid:", order.id);
 
-      const { error: notificationError } = await supabaseAdmin
-        .from("notification_jobs")
-        .upsert(
-          {
-            order_id: order.id,
-            type: "merchant_order",
-          },
-          {
-            onConflict: "order_id,type",
-            ignoreDuplicates: true,
-          },
-        );
+      const notificationError =
+        process.env.TEST_NOTIFICATION_ENQUEUE_FAILURE === "true"
+          ? new Error("TEST notification enqueue failure")
+          : (
+              await supabaseAdmin.from("notification_jobs").upsert(
+                {
+                  order_id: order.id,
+                  type: "merchant_order",
+                },
+                {
+                  onConflict: "order_id,type",
+                  ignoreDuplicates: true,
+                },
+              )
+            ).error;
 
       if (notificationError) {
         console.error("Notification job creation failed:", notificationError);
