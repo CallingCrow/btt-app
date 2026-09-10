@@ -1,6 +1,17 @@
 import type { Json } from "@/types/db";
 import type { CheckoutLineItem } from "@/types/cart";
+import { isCheckoutLineItemArray } from "./checkoutGuards";
 
 export function fromCheckoutJson(json: Json | null): CheckoutLineItem[] {
-  return (json ?? []) as unknown as CheckoutLineItem[];
+  if (json === null) {
+    return [];
+  }
+
+  if (!isCheckoutLineItemArray(json)) {
+    throw new Error(
+      "Invalid checkout JSON: expected an array of valid checkout line items",
+    );
+  }
+
+  return json;
 }
