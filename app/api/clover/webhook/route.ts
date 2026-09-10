@@ -3,6 +3,20 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 const MAX_TIMESTAMP_AGE_SECONDS = 300; // 5 minutes
 
+async function markWebhookEventProcessed(eventId: string) {
+  const { error } = await supabaseAdmin
+    .from("webhook_events")
+    .update({
+      status: "processed",
+    })
+    .eq("id", eventId);
+
+  if (error) {
+    console.error("Failed to mark webhook event processed:", error);
+    throw new Error("Failed to mark webhook event processed");
+  }
+}
+
 function extractCloverApprovedAmount(message: unknown): number | null {
   if (typeof message !== "string") {
     return null;
@@ -263,6 +277,8 @@ export async function POST(req: Request) {
           order.id,
         );
 
+        await markWebhookEventProcessed(eventId);
+
         return new Response("ok", {
           status: 200,
         });
@@ -286,6 +302,8 @@ export async function POST(req: Request) {
       if (notificationError) {
         console.error("Notification job creation failed:", notificationError);
       }
+
+      await markWebhookEventProcessed(eventId);
 
       return new Response("ok", {
         status: 200,
@@ -316,12 +334,17 @@ export async function POST(req: Request) {
           "Order was already processed or was not pending:",
           order.id,
         );
+
+        await markWebhookEventProcessed(eventId);
+
         return new Response("ok", {
           status: 200,
         });
       }
 
       console.log("Order marked failed:", order.id);
+
+      await markWebhookEventProcessed(eventId);
 
       return new Response("ok", {
         status: 200,
