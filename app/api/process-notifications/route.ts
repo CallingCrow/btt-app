@@ -20,6 +20,18 @@ export async function GET(req: Request) {
 
   const workerId = `merchant-notification-worker-${crypto.randomUUID()}`;
 
+  const { data: recoveredCount, error: recoveryError } =
+    await supabaseAdmin.rpc("recover_missing_notification_jobs");
+
+  if (recoveryError) {
+    console.error(
+      "Failed to recover missing notification jobs:",
+      recoveryError,
+    );
+  } else if (recoveredCount > 0) {
+    console.log("Recovered missing notification jobs:", recoveredCount);
+  }
+
   /*
    * ------------------------------------------------------------
    * 1. Protect the worker endpoint

@@ -439,6 +439,7 @@ export type Database = {
         Args: { error_message: string; job_id: number; worker_id: string }
         Returns: boolean
       }
+      recover_missing_notification_jobs: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
