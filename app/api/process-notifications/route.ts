@@ -19,6 +19,14 @@ export async function GET(req: Request) {
   }
 
   const workerId = `merchant-notification-worker-${crypto.randomUUID()}`;
+  const { data: abandonedCount, error: abandonmentError } =
+    await supabaseAdmin.rpc("abandon_expired_orders");
+
+  if (abandonmentError) {
+    console.error("Failed to abandon expired orders:", abandonmentError);
+  } else if (abandonedCount > 0) {
+    console.log("Abandoned expired orders:", abandonedCount);
+  }
 
   const { data: recoveredCount, error: recoveryError } =
     await supabaseAdmin.rpc("recover_missing_notification_jobs");

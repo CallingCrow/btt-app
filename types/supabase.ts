@@ -410,6 +410,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abandon_expired_orders: { Args: never; Returns: number }
       claim_notification_job: {
         Args: { worker_id: string }
         Returns: {

@@ -53,6 +53,7 @@ export interface CheckoutJsonItem {
     name: string;
     price: number;
   }[];
+  customerRequest: string;
 }
 
 export type OrderWithItems = Omit<Order, "order_items"> & {
