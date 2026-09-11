@@ -35,10 +35,11 @@ export function isSelectedOptions(value: unknown): value is SelectedOptions {
         return false;
       }
 
-      if (
-        typeof option.optionId !== "string" ||
-        typeof option.isDefault !== "boolean"
-      ) {
+      if (typeof option.optionId !== "string") {
+        return false;
+      }
+
+      if ("isDefault" in option && typeof option.isDefault !== "boolean") {
         return false;
       }
     }

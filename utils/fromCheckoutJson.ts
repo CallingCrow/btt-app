@@ -13,5 +13,16 @@ export function fromCheckoutJson(json: Json | null): CheckoutLineItem[] {
     );
   }
 
-  return json;
+  return json.map((item) => ({
+    ...item,
+    selectedOptions: Object.fromEntries(
+      Object.entries(item.selectedOptions).map(([groupId, options]) => [
+        groupId,
+        options.map((option) => ({
+          ...option,
+          isDefault: option.isDefault ?? false,
+        })),
+      ]),
+    ),
+  }));
 }
