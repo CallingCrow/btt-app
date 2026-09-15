@@ -43,7 +43,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <header className="sticky z-50 top-0 bg-white">
         <NavBar />
       </header>
