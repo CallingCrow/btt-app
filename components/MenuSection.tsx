@@ -6,7 +6,6 @@ interface MenuItem {
   category_id: string;
   price: number;
   image: string;
-  descriptionS: string;
   descriptionL: string;
   menu_categories: {
     id: string;
@@ -40,7 +39,6 @@ const MenuSection = ({
             category_id={item.category_id}
             price={item.price}
             image={item.image}
-            descriptionS={item.descriptionS}
             descriptionL={item.descriptionL}
             isAdmin={isAdmin}
           />

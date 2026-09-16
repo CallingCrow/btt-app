@@ -9,7 +9,6 @@ export type MenuItem = {
   category_id: string;
   price: number;
   image: string;
-  descriptionS: string;
   descriptionL: string;
   menu_categories: {
     id: string;
@@ -45,7 +44,6 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
         category_id,
         price,
         image,
-        descriptionS,
         descriptionL,
         menu_categories (
           id,
@@ -95,7 +93,6 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
           category_id,
           price,
           image,
-          descriptionS,
           descriptionL,
           menu_categories (
             id,

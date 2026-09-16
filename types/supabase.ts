@@ -233,7 +233,6 @@ export type Database = {
         Row: {
           category_id: string
           descriptionL: string
-          descriptionS: string
           id: string
           image: string | null
           name: string
@@ -242,7 +241,6 @@ export type Database = {
         Insert: {
           category_id: string
           descriptionL: string
-          descriptionS: string
           id?: string
           image?: string | null
           name: string
@@ -251,7 +249,6 @@ export type Database = {
         Update: {
           category_id?: string
           descriptionL?: string
-          descriptionS?: string
           id?: string
           image?: string | null
           name?: string

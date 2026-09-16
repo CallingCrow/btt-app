@@ -15,7 +15,6 @@ interface MenuCardProps {
   category_id: string;
   price: number;
   image: string;
-  descriptionS: string;
   descriptionL: string;
   isAdmin: boolean;
 }
@@ -27,14 +26,7 @@ const formatCurrency = (cents: number) => {
   }).format(cents / 100);
 };
 
-const MenuCard = ({
-  id,
-  name,
-  price,
-  image,
-  descriptionS,
-  descriptionL,
-}: MenuCardProps) => {
+const MenuCard = ({ id, name, price, image, descriptionL }: MenuCardProps) => {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const openModal = () => {
     setIsCustomizeModalOpen(true);
@@ -50,7 +42,7 @@ const MenuCard = ({
           <CardHeader className="pt-[1.25rem] gap-y-[0.375rem]">
             <CardTitle className="!text-[1rem] line-clamp-2">{name}</CardTitle>
             <CardDescription className="!text-[0.875rem] line-clamp-2">
-              {descriptionS}
+              {descriptionL}
             </CardDescription>
           </CardHeader>
           <CardFooter className="">
