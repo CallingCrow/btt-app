@@ -55,7 +55,7 @@ async function testRpcSecurity() {
       console.log(
         `FAIL: anonymous execution of ${fn.name} was allowed`
       );
-      console.log("Unexpected response:", data);
+      console.log("Unexpected RPC response");
       failed = true;
     }
   }

@@ -287,13 +287,7 @@ export async function POST(req: Request) {
 
     const total = subtotal + tax;
 
-    console.log("Checkout tax calculation:", {
-      subtotal,
-      cloverTaxRate: cloverTaxRate.rate,
-      taxRateDecimal,
-      tax,
-      total,
-    });
+    console.log("Checkout tax calculation completed");
 
     // send cart to orders table
     const { data: order, error } = await supabaseAdmin
@@ -312,7 +306,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error("Supabase order insert error:", error);
+      console.error("Supabase order insert failed");
 
       throw new Error(error.message);
     }
@@ -338,17 +332,14 @@ export async function POST(req: Request) {
       .eq("id", order.id);
 
     if (cloverSessionError) {
-      console.error(
-        "Failed to save Clover checkout session:",
-        cloverSessionError,
-      );
+      console.error("Failed to save Clover checkout session");
 
       return Response.json(
         { error: "Failed to initialize payment" },
         { status: 500 },
       );
     }
-    console.log("Returning checkout session:", session);
+    console.log("Clover checkout session created");
 
     return Response.json({
       href: session.href,
@@ -357,7 +348,7 @@ export async function POST(req: Request) {
     const message =
       err instanceof Error ? err.message : "Unknown checkout error";
 
-    console.error(err);
+    console.error("Checkout creation failed");
 
     return new Response(JSON.stringify({ error: message }), { status: 400 });
   }

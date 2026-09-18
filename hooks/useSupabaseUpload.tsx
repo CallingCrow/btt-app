@@ -20,13 +20,11 @@ export const useSupabaseUpload = (bucket: string) => {
       .upload(filePath, file);
 
     if (error) {
-      console.error("Upload error:", error.message);
+      console.error("Upload error");
       return null;
     }
 
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(filePath);
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
     return data.publicUrl;
   };

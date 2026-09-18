@@ -72,10 +72,7 @@ $${(order.total / 100).toFixed(2)}
 
   // Handle errors
   if (error) {
-    console.error("Resend error:", error);
-
+    //console.error("Resend error:", error);
     throw new Error(`Failed to send merchant email: ${error.message}`);
   }
-
-  console.log("Merchant email sent");
 }

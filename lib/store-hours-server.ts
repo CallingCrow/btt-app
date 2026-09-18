@@ -15,7 +15,7 @@ export async function isStoreOpenServer(): Promise<boolean> {
     .maybeSingle();
 
   if (error) {
-    console.error("Failed to fetch store hours:", error);
+    console.error("Failed to fetch store hours");
     throw new Error("Unable to determine store hours");
   }
 
@@ -26,7 +26,7 @@ export async function isStoreOpenServer(): Promise<boolean> {
   try {
     return isWithinStoreHours(data as StoreHours, currentMinutes);
   } catch (error) {
-    console.error("Invalid store hours:", error);
+    console.error("Invalid store hours");
     throw new Error("Invalid store hours configuration");
   }
 }

@@ -58,7 +58,7 @@ export function useCustomization(
           .single();
 
         if (itemError || !item) {
-          console.error("Menu item not found", itemError);
+          console.error("Menu item not found");
 
           if (!cancelled) {
             setError("Unable to load menu item.");
@@ -86,7 +86,7 @@ export function useCustomization(
             .eq("category_id", item.category_id);
 
         if (categoryGroupsError) {
-          console.error("Error fetching category groups:", categoryGroupsError);
+          console.error("Error fetching category groups");
 
           if (!cancelled) {
             setError("Error fetching category groups.");
@@ -122,7 +122,7 @@ export function useCustomization(
           .order("display_order", { ascending: true });
 
         if (optionsError) {
-          console.error("Error fetching customization options:", optionsError);
+          console.error("Error fetching customization options");
 
           if (!cancelled) {
             setError("Error fetching customization options.");
@@ -147,7 +147,7 @@ export function useCustomization(
           .eq("item_id", id);
 
         if (defaultsError) {
-          console.error("Error fetching defaults:", defaultsError);
+          console.error("Error fetching defaults");
 
           if (!cancelled) {
             setError("Error fetching defaults.");
@@ -202,7 +202,7 @@ export function useCustomization(
         setDefaultsMap(map);
         setSelectedOptions(initialSelected);
       } catch (err) {
-        console.error("Error fetching customization data:", err);
+        console.error("Error fetching customization data");
 
         if (!cancelled) {
           setError("Error fetching customization options.");

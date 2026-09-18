@@ -120,9 +120,9 @@ export default function CartSummary() {
       });
 
       const data = await res.json();
-      console.log("Checkout response:", data);
-      console.log("Checkout response status: ", res.status);
-      console.log("Checkout response body: ", data);
+      // console.log("Checkout response:", data);
+      // console.log("Checkout response status: ", res.status);
+      // console.log("Checkout response body: ", data);
 
       if (!res.ok) {
         setCheckoutError(data.error || "Unable to start checkout.");
@@ -131,14 +131,14 @@ export default function CartSummary() {
       }
 
       if (data.href) {
-        console.log("Redirecting to Clover:", data.href);
+        // console.log("Redirecting to Clover:", data.href);
         window.location.href = data.href;
       } else {
         setCheckoutError("Unable to start checkout.");
         setIsCheckingOut(false);
       }
     } catch (err) {
-      console.error("Checkout error:", err);
+      console.error("Checkout request failed");
       setCheckoutError("Unable to start checkout. Please try again.");
       setIsCheckingOut(false);
     }

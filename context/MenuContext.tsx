@@ -55,10 +55,10 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
       .order("category_id")
       .order("name");
 
-    console.log("Menu data:", data);
+    //console.log("Menu data:", data);
 
     if (error) {
-      console.error("Error fetching menu:", error.message);
+      console.error("Error fetching menu");
       setLoading(false);
       return;
     }
@@ -104,10 +104,10 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
         .order("category_id")
         .order("name");
 
-      console.log("Menu data:", data);
+      //console.log("Menu data:", data);
 
       if (error) {
-        console.error("Error fetching menu:", error.message);
+        console.error("Error fetching menu");
         setLoading(false);
         return;
       }
@@ -127,7 +127,7 @@ export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
         .order("display_order");
 
       if (error) {
-        console.error("Error fetching categories:", error.message);
+        console.error("Error fetching categories");
         return;
       }
 

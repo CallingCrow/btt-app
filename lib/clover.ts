@@ -88,8 +88,8 @@ export async function createCloverCheckout(
     externalReferenceId: orderId,
   };
 
-  console.log("CLOVER TAX RATE BEING SENT:", cloverTaxRate);
-  console.log("CLOVER PAYLOAD:", JSON.stringify(payload, null, 2));
+  // console.log("CLOVER TAX RATE BEING SENT:", cloverTaxRate);
+  // console.log("CLOVER PAYLOAD:", JSON.stringify(payload, null, 2));
 
   const res = await fetch(
     `${CLOVER_BASE}/invoicingcheckoutservice/v1/checkouts`,
@@ -106,14 +106,14 @@ export async function createCloverCheckout(
 
   const text = await res.text();
 
-  console.log("Clover status:", res.status);
-  console.log("Clover raw body:", text);
+  // console.log("Clover status:", res.status);
+  // console.log("Clover raw body:", text);
 
   if (!res.ok) {
     throw new Error(`Clover error: ${text}`);
   }
 
   const session: CloverCheckoutResponse = JSON.parse(text);
-  console.log("CLOVER SESSION: ", session);
+  // console.log("CLOVER SESSION: ", session);
   return session;
 }

@@ -48,20 +48,20 @@ export async function POST(req: Request) {
     const verification = verifyCloverSignature(rawBody, signatureHeader);
 
     if (!verification.valid) {
-      console.error("Invalid signature");
-      return new Response("Invalid signature", { status: 401 });
+      console.error("Invalid CLover webhook signature");
+      return new Response("Invalid CLover webhook signature", { status: 401 });
     }
 
     // 4. Prevent replay attacks
     const now = Math.floor(Date.now() / 1000);
     if (Math.abs(now - verification.timestamp) > MAX_TIMESTAMP_AGE_SECONDS) {
-      console.error("Replay attack detected (timestamp too old)");
+      console.error("Stale Clover webhook rejected");
       return new Response("Stale request", { status: 400 });
     }
 
     // 5. Parse JSON AFTER verification
     const body = JSON.parse(rawBody);
-    console.log("RAW CLOVER WEBHOOK BODY:", JSON.stringify(body, null, 2));
+    //console.log("RAW CLOVER WEBHOOK BODY:", JSON.stringify(body, null, 2));
 
     if (typeof body !== "object" || body === null || Array.isArray(body)) {
       console.error("Invalid Clover webhook payload");
@@ -87,13 +87,14 @@ export async function POST(req: Request) {
       return new Response("Invalid webhook type", { status: 400 });
     }
 
-    console.log("CLOVER WEBHOOK:", {
-      eventId,
-      eventType,
-      paymentStatus: body?.status,
-      paymentId: body?.id,
-      checkoutSessionId: body?.checkoutSessionId,
-    });
+    // console.log("CLOVER WEBHOOK:", {
+    //   eventId,
+    //   eventType,
+    //   paymentStatus: body?.status,
+    //   paymentId: body?.id,
+    //   checkoutSessionId: body?.checkoutSessionId,
+    // });
+    console.log("Clover PAYMENT webhook received");
 
     if (!eventId) {
       return new Response("Missing event ID", { status: 400 });
@@ -124,38 +125,30 @@ export async function POST(req: Request) {
             .maybeSingle();
 
         if (existingEventError) {
-          console.error(
-            "Failed to look up existing webhook event:",
-            existingEventError,
-          );
+          console.error("Failed to look up existing webhook event:");
           return new Response("DB error", {
             status: 500,
           });
         }
 
         if (!existingEvent) {
-          console.error(
-            "Webhook event disappeared after duplicate insert:",
-            eventId,
-          );
+          console.error("Webhook event disappeared after duplicate insert:");
           return new Response("DB error", {
             status: 500,
           });
         }
 
         if (existingEvent.status === "processed") {
-          console.log("Already processed Clover webhook event:", eventId);
+          console.log("Already processed Clover webhook event:");
           return new Response("ok", { status: 200 });
         }
 
         console.log(
           "Retrying unprocessed Clover webhook event:",
-          eventId,
-          "status:",
           existingEvent.status,
         );
       } else {
-        console.error("Failed to store webhook event:", eventInsertError);
+        console.error("Failed to store webhook event");
         return new Response("DB error", {
           status: 500,
         });
@@ -192,7 +185,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (orderLookupError) {
-      console.error("Order lookup failed:", orderLookupError);
+      console.error("Clover webhook order lookup failed");
 
       return new Response("DB error", {
         status: 500,
@@ -200,10 +193,7 @@ export async function POST(req: Request) {
     }
 
     if (!order) {
-      console.error(
-        "No order found for Clover checkout session:",
-        checkoutSessionId,
-      );
+      console.error("No order found for Clover checkout session");
 
       return new Response("Order not found", {
         status: 404,
@@ -214,10 +204,7 @@ export async function POST(req: Request) {
       const approvedAmount = extractCloverApprovedAmount(body?.message);
 
       if (approvedAmount === null) {
-        console.error(
-          "Unable to determine Clover approved amount:",
-          body?.message,
-        );
+        console.error("Unable to determine Clover approved amount");
 
         return new Response("Unable to verify payment amount", {
           status: 400,
@@ -227,24 +214,17 @@ export async function POST(req: Request) {
       const expectedAmount = Number(order.total);
 
       if (!Number.isSafeInteger(expectedAmount)) {
-        console.error("Invalid order total:", order.total);
+        console.error("Invalid order total");
 
         return new Response("Invalid order total", {
           status: 500,
         });
       }
 
-      console.log("Clover approved amount:", approvedAmount);
-      console.log("Expected order amount:", expectedAmount);
+      console.log("Clover payment amount verified");
 
       if (approvedAmount !== expectedAmount) {
-        console.error("PAYMENT AMOUNT MISMATCH", {
-          orderId: order.id,
-          checkoutSessionId,
-          paymentId,
-          approvedAmount,
-          expectedAmount,
-        });
+        console.error("Clover payment amount mismatch");
 
         return new Response("Payment amount mismatch", {
           status: 400,
@@ -264,7 +244,7 @@ export async function POST(req: Request) {
         .maybeSingle();
 
       if (updateError) {
-        console.error("Order update failed:", updateError);
+        console.error("Order update failed");
 
         return new Response("DB error", {
           status: 500,
@@ -272,10 +252,7 @@ export async function POST(req: Request) {
       }
 
       if (!updatedOrder) {
-        console.log(
-          "Order was already processed or was not pending:",
-          order.id,
-        );
+        console.log("Clover payment received for an already-processed order");
 
         await markWebhookEventProcessed(eventId);
 
@@ -284,7 +261,7 @@ export async function POST(req: Request) {
         });
       }
 
-      console.log("Order marked paid:", order.id);
+      console.log("Order marked paid after Clover payment");
 
       const { error: notificationError } = await supabaseAdmin
         .from("notification_jobs")
@@ -300,7 +277,7 @@ export async function POST(req: Request) {
         );
 
       if (notificationError) {
-        console.error("Notification job creation failed:", notificationError);
+        console.error("Notification job creation failed after paid order");
       }
 
       await markWebhookEventProcessed(eventId);
@@ -323,17 +300,14 @@ export async function POST(req: Request) {
         .maybeSingle();
 
       if (updateError) {
-        console.error("Failed to mark order failed:", updateError);
+        console.error("Failed to mark order failed after Clover decline");
         return new Response("DB error", {
           status: 500,
         });
       }
 
       if (!updatedOrder) {
-        console.log(
-          "Order was already processed or was not pending:",
-          order.id,
-        );
+        console.log("Clover decline received for an already-processed order");
 
         await markWebhookEventProcessed(eventId);
 
@@ -342,7 +316,7 @@ export async function POST(req: Request) {
         });
       }
 
-      console.log("Order marked failed:", order.id);
+      console.log("Order marked failed after Clover decline");
 
       await markWebhookEventProcessed(eventId);
 
@@ -351,13 +325,13 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("Unhandled Clover payment status:", paymentStatus);
+    console.log("Unhandled Clover payment status");
 
     return new Response("ok", {
       status: 200,
     });
   } catch (err) {
-    console.error("Webhook error:", err);
+    console.error("Clover webhook processing failed");
     return new Response("error", { status: 500 });
   }
 }

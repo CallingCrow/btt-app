@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     await supabaseAdmin.rpc("abandon_expired_orders");
 
   if (abandonmentError) {
-    console.error("Failed to abandon expired orders:", abandonmentError);
+    console.error("Failed to abandon expired orders");
   } else if (abandonedCount > 0) {
     console.log("Abandoned expired orders:", abandonedCount);
   }
@@ -34,10 +34,7 @@ export async function GET(req: Request) {
     await supabaseAdmin.rpc("recover_missing_notification_jobs");
 
   if (recoveryError) {
-    console.error(
-      "Failed to recover missing notification jobs:",
-      recoveryError,
-    );
+    console.error("Failed to recover missing notification jobs");
   } else if (recoveredCount > 0) {
     console.log("Recovered missing notification jobs:", recoveredCount);
   }
@@ -66,7 +63,7 @@ export async function GET(req: Request) {
     );
 
     if (claimError) {
-      console.error("Failed to claim notification job:", claimError);
+      console.error("Failed to claim notification job");
 
       return Response.json(
         {
@@ -83,10 +80,7 @@ export async function GET(req: Request) {
      */
 
     if (!job || job.id == null) {
-      console.log("No more notification jobs available:", {
-        processedCount,
-        workerId,
-      });
+      console.log("No more notification jobs available");
 
       return Response.json({
         success: true,
@@ -99,11 +93,8 @@ export async function GET(req: Request) {
     }
 
     console.log("Claimed notification job:", {
-      jobId: job.id,
-      orderId: job.order_id,
       type: job.type,
       attempts: job.attempts,
-      workerId,
     });
 
     /*
@@ -162,10 +153,7 @@ export async function GET(req: Request) {
        * ----------------------------------------------------------
        */
 
-      console.log("Sending merchant notification:", {
-        jobId: job.id,
-        orderId: order.id,
-      });
+      console.log("Sending merchant notification");
 
       await sendMerchantNotification(typedOrder);
 
@@ -201,10 +189,7 @@ export async function GET(req: Request) {
        * ----------------------------------------------------------
        */
 
-      console.log("Notification job completed:", {
-        jobId: job.id,
-        orderId: order.id,
-      });
+      console.log("Notification job completed");
 
       processedCount++;
       continue;
@@ -218,11 +203,7 @@ export async function GET(req: Request) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown notification error";
 
-      console.error("Notification job failed:", {
-        jobId: job.id,
-        orderId: job.order_id,
-        error: errorMessage,
-      });
+      console.error("Notification job failed");
 
       /*
        * ----------------------------------------------------------
@@ -240,7 +221,7 @@ export async function GET(req: Request) {
       );
 
       if (failError) {
-        console.error("Failed to update failed notification job:", failError);
+        console.error("Failed to update notification job after failure");
 
         return Response.json(
           {
@@ -253,10 +234,9 @@ export async function GET(req: Request) {
       }
 
       if (!failed) {
-        console.error("Notification job could not be marked failed/retry:", {
-          jobId: job.id,
-          workerId,
-        });
+        console.error(
+          "Notification job ownership lost while recording failure",
+        );
 
         return Response.json(
           {
@@ -268,10 +248,7 @@ export async function GET(req: Request) {
         );
       }
 
-      console.log("Notification job failure recorded:", {
-        jobId: job.id,
-        retryScheduled: failed,
-      });
+      console.log("Notification job failure recorded");
 
       return Response.json(
         {
@@ -288,7 +265,6 @@ export async function GET(req: Request) {
   console.log("Notification job batch limit reached:", {
     processedCount,
     maxJobsPerRun: MAX_JOBS_PER_RUN,
-    workerId,
   });
 
   return Response.json({
