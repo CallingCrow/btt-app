@@ -45,6 +45,20 @@ function uniqueCustomizations(
 
 export async function POST(req: Request) {
   try {
+    const origin = req.headers.get("origin");
+
+    const allowedOrigins = new Set([
+      "https://www.bubbleteatime.ca",
+      "http://localhost:3000",
+    ]);
+
+    if (!origin || !allowedOrigins.has(origin)) {
+      return Response.json(
+        { error: "Invalid request origin" },
+        { status: 403 },
+      );
+    }
+
     const rawBody = await req.text();
 
     if (new TextEncoder().encode(rawBody).length > MAX_REQUEST_BODY_BYTES) {
